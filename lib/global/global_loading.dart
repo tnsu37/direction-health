@@ -26,7 +26,7 @@ class GlobalLoading extends StatelessWidget {
         ),
         Text(
           '데이터를 불러오고 있습니다. 잠시만 기다려 주세요.',
-          style: CommonStyle.textStyleFontBlack40300,
+          style: CommonStyle.textStyleFontBlack27300,
         )
       ],
     );

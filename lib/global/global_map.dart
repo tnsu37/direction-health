@@ -84,6 +84,7 @@ class GlobalMap extends StatefulWidget {
     this.title = '',
     this.unit = '',
     this.height = 638,
+    this.sido,
     this.onDistrictTapped,
   });
 
@@ -101,12 +102,38 @@ class GlobalMap extends StatefulWidget {
 
   final double height;
 
+  /// 특정 시도만 표시할 때 해당 시도명 전달 (null 또는 '전체' → 전국)
+  final String? sido;
+
   /// 시군구 탭 콜백 (이름, 값)
   final void Function(String name, double? value)? onDistrictTapped;
 
   @override
   State<GlobalMap> createState() => _KoreaMapWidgetState();
 }
+
+// sgg_229 앞 2자리 코드 → 시도명 매핑
+const Map<String, String> _sidoPrefixMap = {
+  '서울특별시': '11',
+  '부산광역시': '21',
+  '대구광역시': '22',
+  '인천광역시': '23',
+  '광주광역시': '24',
+  '대전광역시': '25',
+  '울산광역시': '26',
+  '세종특별자치시': '29',
+  '경기도': '31',
+  '강원도': '32',
+  '강원특별자치도': '32',
+  '충청북도': '33',
+  '충청남도': '34',
+  '전라북도': '35',
+  '전북특별자치도': '35',
+  '전라남도': '36',
+  '경상북도': '37',
+  '경상남도': '38',
+  '제주특별자치도': '39',
+};
 
 class _KoreaMapWidgetState extends State<GlobalMap> {
   List<_PolygonFeature>? _features;
@@ -115,6 +142,8 @@ class _KoreaMapWidgetState extends State<GlobalMap> {
   String? _error;
 
   _PolygonFeature? _hovered;
+  LatLngBounds? _focusBounds;
+  final MapController _mapController = MapController();
 
   @override
   void initState() {
@@ -125,7 +154,7 @@ class _KoreaMapWidgetState extends State<GlobalMap> {
   @override
   void didUpdateWidget(GlobalMap old) {
     super.didUpdateWidget(old);
-    if (old.mapData != widget.mapData) {
+    if (old.mapData != widget.mapData || old.sido != widget.sido) {
       _buildFeatures();
     }
   }
@@ -143,6 +172,11 @@ class _KoreaMapWidgetState extends State<GlobalMap> {
         for (final e in widget.mapData) e.sggCode: e.value,
       };
 
+      // sido 필터: null 또는 '전체'면 전국, 그 외 해당 시도의 sgg_229 앞 2자리로 필터
+      final sidoPrefix = (widget.sido != null && widget.sido != '전체')
+          ? _sidoPrefixMap[widget.sido]
+          : null;
+
       // min/max 계산
       double minVal = double.infinity, maxVal = double.negativeInfinity;
       for (final v in valueMap.values) {
@@ -154,6 +188,7 @@ class _KoreaMapWidgetState extends State<GlobalMap> {
         maxVal = 1;
       }
       _scale = _ColorScale(min: minVal, max: maxVal);
+
       // 피처 변환
       final features = <_PolygonFeature>[];
 
@@ -161,6 +196,10 @@ class _KoreaMapWidgetState extends State<GlobalMap> {
         final props = gf['properties'] as Map<String, dynamic>;
 
         final sggCode = props['sgg_229']?.toString() ?? '';
+
+        // 시도 필터 적용
+        if (sidoPrefix != null && !sggCode.startsWith(sidoPrefix)) continue;
+
         final sggName = props['sgg_kr']?.toString() ??
             props['SIGUNGU_NM']?.toString() ??
             '';
@@ -178,7 +217,6 @@ class _KoreaMapWidgetState extends State<GlobalMap> {
             if (rings.isEmpty) continue;
 
             final outer = _toLatLngs(rings[0] as List);
-            // ^^
             if (outer.length < 3) continue;
 
             final holes = rings.length > 1
@@ -210,24 +248,47 @@ class _KoreaMapWidgetState extends State<GlobalMap> {
             sggName: sggName,
             value: value,
           ));
-        } else {
-          print('Unsupported geometry type: $geomType');
         }
       }
 
-      print('polygon features count: ${features.length}');
+      // 시도가 지정된 경우 해당 폴리곤들의 바운딩 박스 계산
+      LatLngBounds? focusBounds;
+      if (sidoPrefix != null && features.isNotEmpty) {
+        final allPoints = <LatLng>[];
+        for (final f in features) {
+          allPoints.addAll(f.outer);
+        }
+        focusBounds = LatLngBounds.fromPoints(allPoints);
+      }
 
-      if (mounted)
+      if (mounted) {
         setState(() {
           _features = features;
+          _focusBounds = focusBounds;
           _loading = false;
         });
+
+        // 시도가 지정된 경우 카메라를 해당 시도에 맞춤
+        if (focusBounds != null) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (mounted && _focusBounds != null) {
+              _mapController.fitCamera(
+                CameraFit.bounds(
+                  bounds: _focusBounds!,
+                  padding: const EdgeInsets.all(24),
+                ),
+              );
+            }
+          });
+        }
+      }
     } catch (e) {
-      if (mounted)
+      if (mounted) {
         setState(() {
           _error = e.toString();
           _loading = false;
         });
+      }
     }
   }
 
@@ -296,6 +357,7 @@ class _KoreaMapWidgetState extends State<GlobalMap> {
     return Stack(
       children: [
         FlutterMap(
+          mapController: _mapController,
           options: MapOptions(
             initialCenter: const LatLng(36.5, 127.8),
             initialZoom: 6.8,
