@@ -743,7 +743,7 @@ class _StyledDropdown extends StatelessWidget {
   Widget build(BuildContext context) {
     bool big = Common.bigSize.value;
     return SizedBox(
-      width: big ? 288.2 : 200.2,
+      width: big ? 294 : 200.2,
       height: big ? 44 : 37,
       child: Row(
         children: [
@@ -878,7 +878,7 @@ class _MultiDropdownItemState extends State<_MultiDropdownItem> {
     final bool big = Common.bigSize.value;
 
     return SizedBox(
-      width: big ? 606.4 : 415,
+      width: big ? 618.4 : 415,
       height: big ? 44 : 37,
       child: Row(
         children: [
@@ -1039,7 +1039,6 @@ class _SearchButton extends StatelessWidget {
     );
   }
 }
-
 
 // ──────────────────────────────────────────────
 //  Download buttons row (시각화 저장 / CSV 저장)

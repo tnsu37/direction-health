@@ -26,7 +26,7 @@ class BreadcrumbBar extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               // Home icon
-              SvgPicture.asset('assets/icons/home.svg', height: 20),
+              SvgPicture.asset('assets/icons/home.svg', height: 24),
               const SizedBox(width: 15),
               // Main menu
               Text(menuLabel, style: CommonStyle.textStyleWhite16600),
