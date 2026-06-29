@@ -19,9 +19,9 @@ class ExposureViewPage extends GetView<ExposureController> {
           width: Common.bigSize.value ? 638 : 450,
           child: Obx(() => GlobalMap(
                 mapData: controller.result.value.mapData,
-                sido: controller.fetchedSido.value,
+                sido: controller.fetchedSido,
                 label: MainController.to.selectedSubLabel,
-                title: controller.mapTitle.value,
+                title: controller.mapTitle,
                 unit: Common.unit(MainController.to.selectedSubId.value),
               )),
         ),

@@ -9,8 +9,10 @@ class ExposureController extends GetxController {
 
   final _api = ApiService();
   late Rx<ExposureApiResponse> result;
-  RxString fetchedSido = '전체'.obs;
   RxString error = ''.obs;
+
+  String fetchedSido = '전체';
+  String mapTitle = '여름철 온도(전국, 전체 기간)';
   Map<String, dynamic> fetchedRequest = {
     'mode': '여름철 온도',
     'year': 2018,
@@ -25,7 +27,6 @@ class ExposureController extends GetxController {
     mc.animationController.repeat();
     error.value = '';
     try {
-      print('?');
       final res = await _api.pastExposure(
         mode: ApiMap.mode(mc.selectedSubId.value),
         year_: ApiMap.year(mc.filterYear.value),
@@ -33,7 +34,7 @@ class ExposureController extends GetxController {
         sido_: mc.filterSido.value,
         sgg_: mc.filterSigungu.value,
       );
-      print('res: ${res.data}');
+      fetchedSido = mc.filterSido.value;
       fetchedRequest = {
         'mode': ApiMap.mode(mc.selectedSubId.value),
         'year_': ApiMap.year(mc.filterYear.value),
@@ -41,11 +42,11 @@ class ExposureController extends GetxController {
         'sido_': mc.filterSido.value,
         'sgg_': mc.filterSigungu.value,
       };
+      mapTitle = _buildTitle(mc);
       result.value = res.data ?? ExposureApiResponse.empty;
-      fetchedSido.value = mc.filterSido.value;
-      mapTitle.value = _buildTitle(mc);
       if (res.isEmpty) error.value = res.message ?? '데이터가 없습니다.';
     } on ApiException catch (e) {
+      mapTitle = _buildTitle(mc);
       error.value = e.message;
     } finally {
       mc.animationController.stop();
@@ -317,8 +318,6 @@ class ExposureController extends GetxController {
   };
 
   // 초기값: 더미 데이터(여름철 온도, 2019년 8월, 서울특별시)에 맞춤
-  RxString mapTitle = '여름철 온도 (서울특별시, 2019년 8월)'.obs;
-
   String _buildTitle(MainController mc) {
     final mode = ApiMap.mode(mc.selectedSubId.value);
     final year = mc.filterYear.value;
@@ -339,33 +338,9 @@ class ExposureController extends GetxController {
     return '$mode (${regionPart.isNotEmpty ? regionPart : '전국'}, ${timePart.isNotEmpty ? timePart : '전체 기간'})';
   }
 
-  void onChanged(int index, String? value) {
-    // values[index].value = value!;
-    // if (index == 2) {
-    //   district.value = '';
-    //   //items[3].assignAll(Common.district[value]!);
-    // }
-  }
-
-  //List<RxString> values = [];
-  //RxList<RxList<String>> items = <RxList<String>>[].obs;
-
   @override
   void onInit() {
     result = ExposureApiResponse.fromJson(exampleJson).obs;
-    // values.addAll([year, month, city, district]);
-    // valueIndex = MainController.to.subIndex;
-    // items.addAll([
-    //   Common.year.obs,
-    //   valueIndex.value == 0
-    //       ? Common.summer.obs
-    //       : valueIndex.value == 1
-    //           ? Common.winter.obs
-    //           : Common.month.obs,
-    //   Common.city.obs,
-    //   <String>[].obs
-    // ]);
-    // reset();
     super.onInit();
   }
 }
