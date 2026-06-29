@@ -1,5 +1,6 @@
 import 'package:boilerplate/common/common.dart';
 import 'package:boilerplate/global/global_filter_bar.dart';
+import 'package:boilerplate/global/global_loading.dart';
 import 'package:get/get.dart';
 import '../../../global/global_layout_widget.dart';
 import '../controller/main_controller.dart';
@@ -60,13 +61,18 @@ class MainViewPage extends GetView<MainController> {
                       // Main content area
                       Expanded(
                         child: SingleChildScrollView(
-                            child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            GlobalFilterBar(controller: controller),
-                            ExposureViewPage()
-                          ],
-                        )),
+                            child: Obx(() => Common.isLoading.value
+                                ? GlobalLoading(
+                                    animationController:
+                                        controller.animationController)
+                                : Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      GlobalFilterBar(controller: controller),
+                                      ExposureViewPage()
+                                    ],
+                                  ))),
                       ),
                     ],
                   ),

@@ -35,6 +35,9 @@ class TimeSeries extends StatelessWidget {
     final minY = (dataMin - padding).floorToDouble();
     final maxY = (dataMax + padding).ceilToDouble();
 
+    final labelInterval =
+        periods.length <= 12 ? 1 : (periods.length / 8).ceil();
+
     return SizedBox(
       height: 420,
       child: LineChart(
@@ -82,16 +85,19 @@ class TimeSeries extends StatelessWidget {
               ),
             ),
             bottomTitles: AxisTitles(
-              axisNameWidget: Text(
-                xTitle,
-                style: const TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600,
+              axisNameSize: 40,
+              axisNameWidget: Padding(
+                padding: const EdgeInsets.only(top: 10),
+                child: Text(
+                  xTitle,
+                  style: const TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
               ),
               sideTitles: SideTitles(
                 showTitles: true,
-                reservedSize: 55,
                 interval: 1,
                 getTitlesWidget: (value, meta) {
                   final index = value.toInt();
@@ -100,11 +106,29 @@ class TimeSeries extends StatelessWidget {
                     return const SizedBox.shrink();
                   }
 
-                  return Transform.rotate(
-                    angle: -0.7,
+                  final showLabel = index == 0 ||
+                      index == periods.length - 1 ||
+                      index % labelInterval == 0;
+
+                  if (!showLabel) {
+                    return const SizedBox.shrink();
+                  }
+
+                  // 2019-08-01 -> 08-01 로 줄이기
+                  final label = periods[index].length >= 10
+                      ? periods[index].substring(5)
+                      : periods[index];
+
+                  return SideTitleWidget(
+                    axisSide: meta.axisSide,
+                    space: 10,
+                    angle: -0.65,
                     child: Text(
-                      periods[index],
-                      style: const TextStyle(fontSize: 11),
+                      label,
+                      style: const TextStyle(
+                        fontSize: 11,
+                        color: Colors.black87,
+                      ),
                     ),
                   );
                 },

@@ -1,17 +1,66 @@
 import 'package:boilerplate/common/api.dart';
-import 'package:boilerplate/common/common.dart';
+import 'package:boilerplate/common/api_mappers.dart';
 import 'package:boilerplate/pages/main/controller/main_controller.dart';
 import 'package:get/get.dart';
+import '../../../common/common.dart';
 
 class ExposureController extends GetxController {
-  ///response data
+  static ExposureController get to => Get.find<ExposureController>();
+
+  final _api = ApiService();
+  late Rx<ExposureApiResponse> result;
+  RxString fetchedSido = '전체'.obs;
+  RxString error = ''.obs;
+  Map<String, dynamic> fetchedRequest = {
+    'mode': '여름철 온도',
+    'year': 2018,
+    'month': '전체',
+    'sido': '전체',
+    'sgg': '전체',
+  };
+
+  Future<void> fetch() async {
+    final mc = MainController.to;
+    Common.isLoading.value = true;
+    mc.animationController.repeat();
+    error.value = '';
+    try {
+      print('?');
+      final res = await _api.pastExposure(
+        mode: ApiMap.mode(mc.selectedSubId.value),
+        year_: ApiMap.year(mc.filterYear.value),
+        month_: ApiMap.month(mc.filterMonth.value),
+        sido_: mc.filterSido.value,
+        sgg_: mc.filterSigungu.value,
+      );
+      print('res: ${res.data}');
+      fetchedRequest = {
+        'mode': ApiMap.mode(mc.selectedSubId.value),
+        'year_': ApiMap.year(mc.filterYear.value),
+        'month_': ApiMap.month(mc.filterMonth.value),
+        'sido_': mc.filterSido.value,
+        'sgg_': mc.filterSigungu.value,
+      };
+      result.value = res.data ?? ExposureApiResponse.empty;
+      fetchedSido.value = mc.filterSido.value;
+      mapTitle.value = _buildTitle(mc);
+      if (res.isEmpty) error.value = res.message ?? '데이터가 없습니다.';
+    } on ApiException catch (e) {
+      error.value = e.message;
+    } finally {
+      mc.animationController.stop();
+      Common.isLoading.value = false;
+    }
+  }
+
+  ///response data (초기 표시용 더미 데이터)
   final exampleJson = {
     "status": "success",
     "request": {
       "year": 2018,
       "month": "전체",
-      "sido": "서울특별시",
-      "sgg": "강남구",
+      "sido": "전체",
+      "sgg": "전체",
       "mode": "여름철 온도"
     },
     "data": {
@@ -267,45 +316,27 @@ class ExposureController extends GetxController {
     "files": {"map_image": {}, "timeseries_image": {}}
   };
 
-  late ExposureApiResponse exampleResponse;
-  String mapTitle = '여름철 온도(\'11년~\'19년 6월~9월)';
+  // 초기값: 더미 데이터(여름철 온도, 2019년 8월, 서울특별시)에 맞춤
+  RxString mapTitle = '여름철 온도 (서울특별시, 2019년 8월)'.obs;
 
-  ///출력 - 년,월,시도,시군구에 대한 화면 만들어져야함
-  void output() async {
-    String mode = '';
-    switch (MainController.to.selectedSubId.value) {
-      case "annualTemp":
-        mode = '연중 온도';
-      case "summerTemp":
-        mode = '여름철 온도';
-      case "pm25":
-        mode = 'PM2.5';
-      case "o3":
-        mode = 'O3';
-    }
-    // 로딩 화면 시작
-    // MainController.to.startLoading();
-    // String mode = '여름철 온도';
-    // switch (valueIndex.value) {
-    //   case 1:
-    //     mode = '겨울철 온도';
-    //   case 2:
-    //     mode = 'PM2.5';
-    //   case 3:
-    //     mode = 'O3';
-    // }
-    // var response = await ApiService().exposure(
-    //     year: year.value.isEmpty ? '전체' : year.value.replaceAll('년', ''),
-    //     month: month.value.isEmpty ? '전체' : month.value.replaceAll('월', ''),
-    //     city: city.value.isEmpty ? '전체' : city.value,
-    //     sgg: district.value.isEmpty ? '전체' : district.value,
-    //     mode: mode);
-    // if (response != null) {
-    //   data.assignAll(response);
-    // }
-    // print('data $data');
-    // 로딩 화면 취소
-    //MainController.to.stopLoading();
+  String _buildTitle(MainController mc) {
+    final mode = ApiMap.mode(mc.selectedSubId.value);
+    final year = mc.filterYear.value;
+    final month = mc.filterMonth.value;
+    final sido = mc.filterSido.value;
+    final sgg = mc.filterSigungu.value;
+
+    final timePart = [
+      if (year != '전체') year,
+      if (month != '전체') month,
+    ].join(' ');
+
+    final regionPart = [
+      if (sido != '전체') sido,
+      if (sgg != '전체') sgg,
+    ].join(' ');
+
+    return '$mode (${regionPart.isNotEmpty ? regionPart : '전국'}, ${timePart.isNotEmpty ? timePart : '전체 기간'})';
   }
 
   void onChanged(int index, String? value) {
@@ -321,7 +352,7 @@ class ExposureController extends GetxController {
 
   @override
   void onInit() {
-    exampleResponse = ExposureApiResponse.fromJson(exampleJson);
+    result = ExposureApiResponse.fromJson(exampleJson).obs;
     // values.addAll([year, month, city, district]);
     // valueIndex = MainController.to.subIndex;
     // items.addAll([

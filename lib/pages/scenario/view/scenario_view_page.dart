@@ -1,9 +1,8 @@
-import 'package:boilerplate/common/common.dart';
-import 'package:boilerplate/pages/main/controller/main_controller.dart';
+import 'package:boilerplate/global/result_table/result_table.dart';
+import 'package:boilerplate/global/result_table/rt_factory.dart';
 import 'package:get/get.dart';
 import 'package:flutter/material.dart';
 import '../controller/scenario_controller.dart';
-import 'package:boilerplate/global/global_loading.dart';
 
 class ScenarioViewPage extends GetView<ScenarioController> {
   const ScenarioViewPage({super.key});
@@ -11,24 +10,17 @@ class ScenarioViewPage extends GetView<ScenarioController> {
   @override
   Widget build(BuildContext context) {
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Expanded(
-        //     child: SingleChildScrollView(
-        //       scrollDirection: Axis.horizontal,
-        //       child: SingleChildScrollView(
-        //         child: Row(
-        //           children: [
-        //             Obx(() => Image.network(
-        //                 controller.data['map_image_url'],
-        //                 width: 563)),
-        //             const SizedBox(width: 15),
-        //             Obx(() => GlobalTable2(
-        //                 tableData: controller.data['table'])),
-        //           ],
-        //         ),
-        //       ),
-        //     ),
-        //   ),
+        Obx(() {
+          final data = controller.result.value;
+          if (data == null) return const SizedBox.shrink();
+          final tableSet = ResultTableFactory.fromFutureScenario(
+            request: controller.fetchedRequest,
+            data: data,
+          );
+          return ResultTable(tableSet: tableSet);
+        }),
       ],
     );
   }

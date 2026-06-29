@@ -1,5 +1,8 @@
 import 'package:boilerplate/common/common.dart';
 import 'package:boilerplate/pages/exposure/controller/exposure_controller.dart';
+import 'package:boilerplate/pages/health_effects/controller/health_effects_controller.dart';
+import 'package:boilerplate/pages/health_projection/controller/health_projection_controller.dart';
+import 'package:boilerplate/pages/scenario/controller/scenario_controller.dart';
 import 'package:get/get.dart';
 import 'dart:typed_data';
 import 'package:flutter/animation.dart';
@@ -58,6 +61,7 @@ enum FilterConfig {
 class MainController extends GetxController
     with GetSingleTickerProviderStateMixin {
   static MainController get to => Get.find<MainController>();
+
   // ── Navigation state ──
   Rx<MainMenu> selectedMenu = MainMenu.exposure.obs;
   RxString selectedSubId = 'annualTemp'.obs;
@@ -322,15 +326,16 @@ class MainController extends GetxController
   }
 
   void search() {
-    print('serch');
-    // switch (selectedMenu.value) {
-    //   case MainMenu.exposure:
-    //     ExposureController.to.fetch();
-    //     break;
-    //   default:
-    //     // TODO: 건강영향 / 시나리오 / 미래추정 메뉴도 동일 패턴으로 연결 예정
-    //     break;
-    // }
+    switch (selectedMenu.value) {
+      case MainMenu.exposure:
+        ExposureController.to.fetch();
+      case MainMenu.healthImpact:
+        HealthEffectsController.to.fetch();
+      case MainMenu.climateScenario:
+        ScenarioController.to.fetch();
+      case MainMenu.futureHealth:
+        HealthProjectionController.to.fetch();
+    }
   }
 
   // ──────────────────────────────────────────
@@ -364,7 +369,6 @@ class MainController extends GetxController
     super.onInit();
   }
 }
-
 
 // class MainController extends GetxController
 //     with GetSingleTickerProviderStateMixin {

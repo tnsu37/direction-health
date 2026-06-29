@@ -1,10 +1,37 @@
 import 'package:boilerplate/common/api.dart';
+import 'package:boilerplate/common/api_mappers.dart';
 import 'package:boilerplate/common/common.dart';
 import 'package:boilerplate/pages/main/controller/main_controller.dart';
 import 'package:get/get.dart';
 
 class HealthEffectsController extends GetxController {
   static HealthEffectsController get to => Get.find<HealthEffectsController>();
+
+  final _api = ApiService();
+  final Rx<PastHealthRiskResponse?> result = Rx(null);
+  RxBool isLoading = false.obs;
+  RxString error = ''.obs;
+
+  Future<void> fetch() async {
+    final mc = MainController.to;
+    isLoading.value = true;
+    error.value = '';
+    try {
+      final res = await _api.pastHealthRisk(
+        mode: ApiMap.mode(mc.selectedSubId.value),
+        evalGroup: ApiMap.evalGroup(mc.filterEvalGroup.value),
+        sido_: mc.filterSido.value,
+        sgg_: mc.filterSigungu.value,
+      );
+      result.value = res.data;
+      if (res.isEmpty) error.value = res.message ?? '데이터가 없습니다.';
+    } on ApiException catch (e) {
+      error.value = e.message;
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
   //시도
   RxString city = ''.obs;
   //시군구
@@ -12,7 +39,7 @@ class HealthEffectsController extends GetxController {
   //건강영향, 신뢰구간
   RxString rr = ''.obs;
 
-  ///response data
+  ///response data (legacy)
   RxMap<String, dynamic> data = <String, dynamic>{}.obs;
 
   ///초기화
