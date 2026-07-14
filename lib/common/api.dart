@@ -13,7 +13,7 @@ class ApiService {
   /// (기존 코드 값: https://team-motive.com)
   static const String baseUrl = String.fromEnvironment(
     'API_BASE_URL',
-    defaultValue: 'https://team-motive.com', // TODO: 실제 배포 주소로 교체
+    defaultValue: 'http://13.125.116.197:8000',
   );
 
   static const Duration _timeout = Duration(seconds: 120);
@@ -36,10 +36,12 @@ class ApiService {
       throw ApiException('NETWORK_ERROR', '서버에 연결할 수 없습니다.', cause: e);
     }
 
+    print('===== RAW RESPONSE =====');
+    print(utf8.decode(res.bodyBytes));
+
     final dynamic decoded =
         res.body.isEmpty ? const {} : json.decode(utf8.decode(res.bodyBytes));
-    final map =
-        decoded is Map<String, dynamic> ? decoded : <String, dynamic>{};
+    final map = decoded is Map<String, dynamic> ? decoded : <String, dynamic>{};
 
     if (res.statusCode == 200 || res.statusCode == 201) {
       return map; // { status, message, request, data, files }
@@ -62,7 +64,9 @@ class ApiService {
         (env['request'] as Map?)?.cast<String, dynamic>() ?? const {};
     if (status == 'empty') {
       return ApiResult(
-          status: 'empty', message: env['message']?.toString(), request: request);
+          status: 'empty',
+          message: env['message']?.toString(),
+          request: request);
     }
     return ApiResult(
       status: 'success',
@@ -264,12 +268,14 @@ class TableEntry {
 }
 
 class ExposureApiResponse {
+  final Map<String, dynamic> request;
   final List<MapDataEntry> mapData;
   final List<TimeSeriesEntry> timeseriesData;
   final List<TableEntry> monthly;
   final List<TableEntry> yearly;
 
   const ExposureApiResponse({
+    this.request = const {},
     required this.mapData,
     required this.timeseriesData,
     required this.monthly,
@@ -277,10 +283,13 @@ class ExposureApiResponse {
   });
 
   factory ExposureApiResponse.fromJson(Map<String, dynamic> json) {
+    final request =
+        (json['request'] as Map?)?.cast<String, dynamic>() ?? const {};
     final data = (json['data'] as Map?)?.cast<String, dynamic>() ?? const {};
     final tableData =
         (data['table_data'] as Map?)?.cast<String, dynamic>() ?? const {};
     return ExposureApiResponse(
+      request: request,
       mapData: _list(data['map_data'], MapDataEntry.fromJson),
       timeseriesData: _list(data['timeseries_data'], TimeSeriesEntry.fromJson),
       monthly: _list(tableData['monthly'], TableEntry.fromJson),
@@ -289,6 +298,7 @@ class ExposureApiResponse {
   }
 
   static ExposureApiResponse get empty => const ExposureApiResponse(
+        request: {},
         mapData: [],
         timeseriesData: [],
         monthly: [],
@@ -344,6 +354,9 @@ class PastHealthRiskResponse {
       riskData: _list(data['risk_data'], RiskPoint.fromJson),
     );
   }
+
+  static PastHealthRiskResponse get empty =>
+      const PastHealthRiskResponse(exposureData: [], riskData: []);
 }
 
 // ════════════════════════════════════════════════════════════════════
@@ -407,8 +420,7 @@ class FutureExposureResponse {
     final data = (json['data'] as Map?)?.cast<String, dynamic>() ?? const {};
     return FutureExposureResponse(
       yearlyTrend: _list(data['yearly_trend'], YearlyTrendPoint.fromJson),
-      periodSummary:
-          _list(data['period_summary'], PeriodSummaryPoint.fromJson),
+      periodSummary: _list(data['period_summary'], PeriodSummaryPoint.fromJson),
       fullSummary: _rawList(data['full_summary']),
       selectedScenario: _rawList(data['selected_scenario']),
     );

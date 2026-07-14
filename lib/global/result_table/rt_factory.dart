@@ -31,7 +31,8 @@ class ResultTableFactory {
     } else if (isAllYear && !isAllMonth) {
       return ResultTableSet.single(_pastCase13(data, monthStr, unitLabel));
     } else {
-      return ResultTableSet.single(_pastCase14(data, yearStr, monthStr, unitLabel));
+      return ResultTableSet.single(
+          _pastCase14(data, yearStr, monthStr, unitLabel));
     }
   }
 
@@ -45,6 +46,29 @@ class ResultTableFactory {
     } else {
       return _scenarioTemp(request: request, data: data, mode: mode);
     }
+  }
+
+  static ResultTableSet fromPastHealthRisk({
+    required Map<String, dynamic> request,
+    required PastHealthRiskResponse data,
+  }) {
+    final mode = request['mode']?.toString() ?? '';
+    final isDeath = mode == '여름철 온도' || mode == 'PM2.5' || mode == 'O3';
+    final anLabel = isDeath ? '초과사망자수 (명)' : '초과발생건수 (건)';
+
+    final headers = <RtCell>[
+      const RtCell('시군구', bold: true),
+      RtCell(anLabel, bold: true),
+    ];
+
+    final rows = data.riskData.map((r) => <RtCell>[
+          RtCell(r.sggName),
+          RtCell(r.anVal.toStringAsFixed(2)),
+        ]).toList();
+
+    if (rows.isEmpty) return ResultTableSet([]);
+
+    return ResultTableSet.single(ResultTableModel(headers: headers, rows: rows));
   }
 
   static ResultTableSet fromFutureProjection({
@@ -62,28 +86,31 @@ class ResultTableFactory {
   // ─── Past Exposure sub-cases ──────────────────────────────────────────────
 
   // 전체 연도 / 전체 월 → rows=월, cols=연도
-  static ResultTableModel _pastCase11(ExposureApiResponse data, String unitLabel) {
+  static ResultTableModel _pastCase11(
+      ExposureApiResponse data, String unitLabel) {
     final Map<int, Map<int, double?>> monthly = {};
     for (final e in data.monthly) {
       final (y, m) = _parseYearMonth(e.period);
       if (y != null && m != null) {
-        monthly[y] ??= {};
+        monthly.putIfAbsent(y, () => {});
         monthly[y]![m] = e.value;
       }
     }
     final Map<int, double?> yearly = {};
-    String yearlyLabel = '연평균';
+    //String yearlyLabel = '연평균';
     for (final e in data.yearly) {
       final y = _parseYear(e.period);
       if (y != null) {
         yearly[y] = e.value;
-        yearlyLabel = _parseYearlyLabel(e.period);
       }
     }
 
     final sortedYears = monthly.keys.toList()..sort();
     final months = <int>{};
-    for (final m in monthly.values) months.addAll(m.keys);
+    for (final m in monthly.values) {
+      months.addAll(m.keys);
+    }
+
     final sortedMonths = months.toList()..sort();
 
     final headers = <RtCell>[
@@ -92,12 +119,14 @@ class ResultTableFactory {
     ];
 
     final rows = <List<RtCell>>[
-      ...sortedMonths.map((m) => <RtCell>[
-            RtCell('$m월', bold: true),
-            ...sortedYears.map((y) => RtCell(_fmt(monthly[y]?[m]))),
-          ]),
+      ...sortedMonths.map((m) {
+        return <RtCell>[
+          RtCell('$m월', bold: true),
+          ...sortedYears.map((y) => RtCell(_fmt(monthly[y]?[m]))),
+        ];
+      }),
       <RtCell>[
-        RtCell(yearlyLabel, bold: true),
+        RtCell(unitLabel, bold: true),
         ...sortedYears.map((y) => RtCell(_fmt(yearly[y]))),
       ],
     ];
@@ -107,60 +136,118 @@ class ResultTableFactory {
 
   // 특정 연도 / 전체 월 → 1행: 월별값 + 연평균
   static ResultTableModel _pastCase12(
-      ExposureApiResponse data, String yearStr, String unitLabel) {
-    final months = data.monthly;
-    final monthLabels = months.map((e) {
+    ExposureApiResponse data,
+    String yearStr,
+    String unitLabel,
+  ) {
+    final selectedYear = int.tryParse(yearStr);
+
+    final selectedMonthly = data.monthly.where((e) {
+      final (y, _) = _parseYearMonth(e.period);
+      return selectedYear == null || y == selectedYear;
+    }).toList()
+      ..sort((a, b) {
+        final (_, ma) = _parseYearMonth(a.period);
+        final (_, mb) = _parseYearMonth(b.period);
+        return (ma ?? 0).compareTo(mb ?? 0);
+      });
+
+    final selectedYearly = data.yearly.where((e) {
+      final y = _parseYear(e.period);
+      return selectedYear == null || y == selectedYear;
+    }).toList();
+
+    final yearly = selectedYearly.isNotEmpty ? selectedYearly.first : null;
+
+    final monthLabels = selectedMonthly.map((e) {
       final (_, m) = _parseYearMonth(e.period);
       return m != null ? '$m월' : e.period;
     }).toList();
-    final yearly = data.yearly.isNotEmpty ? data.yearly.first : null;
-    final yearlyLabel = yearly != null ? _parseYearlyLabel(yearly.period) : '연평균';
+
+    final avgLabel = _periodAverageLabel(
+      selectedMonthly
+          .map((e) => _parseYearMonth(e.period).$2)
+          .whereType<int>()
+          .toList(),
+    );
 
     final headers = <RtCell>[
-      RtCell('$yearStr년', bold: true),
+      RtCell('${selectedYear ?? yearStr}년', bold: true),
       ...monthLabels.map((l) => RtCell(l, bold: true)),
-      RtCell(yearlyLabel, bold: true),
+      RtCell(avgLabel, bold: true),
     ];
+
     final row = <RtCell>[
       RtCell(unitLabel, bold: true),
-      ...months.map((e) => RtCell(_fmt(e.value))),
+      ...selectedMonthly.map((e) => RtCell(_fmt(e.value))),
       RtCell(_fmt(yearly?.value)),
     ];
+
     return ResultTableModel(headers: headers, rows: [row]);
   }
 
   // 전체 연도 / 특정 월 → 1행: 연도별 해당 월 값
   static ResultTableModel _pastCase13(
-      ExposureApiResponse data, String monthStr, String unitLabel) {
-    final items = data.monthly;
-    final yearLabels = items.map((e) {
-      final y = _parseYear(e.period);
-      return y != null ? '$y년' : e.period;
-    }).toList();
+    ExposureApiResponse data,
+    String monthStr,
+    String unitLabel,
+  ) {
+    final selectedMonth = int.tryParse(monthStr);
+
+    final selectedMonthly = data.monthly.where((e) {
+      final (_, m) = _parseYearMonth(e.period);
+      return selectedMonth == null || m == selectedMonth;
+    }).toList()
+      ..sort((a, b) {
+        final ya = _parseYear(a.period) ?? 0;
+        final yb = _parseYear(b.period) ?? 0;
+        return ya.compareTo(yb);
+      });
 
     final headers = <RtCell>[
       const RtCell('', bold: true),
-      ...yearLabels.map((l) => RtCell(l, bold: true)),
+      ...selectedMonthly.map((e) {
+        final y = _parseYear(e.period);
+        return RtCell(y != null ? '$y년' : e.period, bold: true);
+      }),
     ];
+
     final row = <RtCell>[
       RtCell(unitLabel, bold: true),
-      ...items.map((e) => RtCell(_fmt(e.value))),
+      ...selectedMonthly.map((e) => RtCell(_fmt(e.value))),
     ];
+
     return ResultTableModel(headers: headers, rows: [row]);
   }
 
   // 특정 연도 / 특정 월 → 단일 값
   static ResultTableModel _pastCase14(
-      ExposureApiResponse data, String yearStr, String monthStr, String unitLabel) {
-    final value = data.monthly.isNotEmpty ? data.monthly.first.value : null;
+    ExposureApiResponse data,
+    String yearStr,
+    String monthStr,
+    String unitLabel,
+  ) {
+    final selectedYear = int.tryParse(yearStr);
+    final selectedMonth = int.tryParse(monthStr);
+
+    final item = data.monthly.where((e) {
+      final (y, m) = _parseYearMonth(e.period);
+      return (selectedYear == null || y == selectedYear) &&
+          (selectedMonth == null || m == selectedMonth);
+    }).firstOrNull;
+    final value = item?.value;
+
     final headers = <RtCell>[
       const RtCell('', bold: true),
-      RtCell('$yearStr년 $monthStr월', bold: true),
+      RtCell('${selectedYear ?? yearStr}년 - ${selectedMonth ?? monthStr}월',
+          bold: true),
     ];
+
     final row = <RtCell>[
       RtCell(unitLabel, bold: true),
       RtCell(_fmt(value)),
     ];
+
     return ResultTableModel(headers: headers, rows: [row]);
   }
 
@@ -230,8 +317,8 @@ class ResultTableFactory {
       ];
     }).toList();
 
-    return ResultTableSet.single(
-        ResultTableModel(groupHeaders: groupHeaders, headers: headers, rows: rows));
+    return ResultTableSet.single(ResultTableModel(
+        groupHeaders: groupHeaders, headers: headers, rows: rows));
   }
 
   // ─── Future Scenario: AP (PM2.5 / O3) ───────────────────────────────────
@@ -284,7 +371,8 @@ class ResultTableFactory {
     if (data.fullSummary.isEmpty) return ResultTableSet([table1]);
 
     final firstPeriod = data.fullSummary
-        .firstWhere((e) => !(e['period']?.toString().contains('Baseline') == true),
+        .firstWhere(
+            (e) => !(e['period']?.toString().contains('Baseline') == true),
             orElse: () => data.fullSummary.first)['period']
         ?.toString();
 
@@ -347,10 +435,9 @@ class ResultTableFactory {
         [
           const RtCell('기준 기간(2015-2019)', bold: true),
           RtCell(_fmt(baseVal is num ? baseVal.toDouble() : null)),
-          RtCell(_fmt(
-              selected['proj_val'] is num
-                  ? (selected['proj_val'] as num).toDouble()
-                  : null)),
+          RtCell(_fmt(selected['proj_val'] is num
+              ? (selected['proj_val'] as num).toDouble()
+              : null)),
         ]
       ],
     );
@@ -405,12 +492,14 @@ class ResultTableFactory {
       ];
     }).toList();
 
-    return ResultTableSet.single(ResultTableModel(headers: headers, rows: rows));
+    return ResultTableSet.single(
+        ResultTableModel(headers: headers, rows: rows));
   }
 
   // ─── Future Projection: PM2.5 ────────────────────────────────────────────
 
-  static ResultTableSet _projectionPM25({required FutureProjectionResponse data}) {
+  static ResultTableSet _projectionPM25(
+      {required FutureProjectionResponse data}) {
     if (data.summaryData.isEmpty) return ResultTableSet([]);
 
     final headers = <RtCell>[
@@ -429,7 +518,8 @@ class ResultTableFactory {
       ];
     }).toList();
 
-    return ResultTableSet.single(ResultTableModel(headers: headers, rows: rows));
+    return ResultTableSet.single(
+        ResultTableModel(headers: headers, rows: rows));
   }
 
   // ─── Helpers ─────────────────────────────────────────────────────────────
@@ -446,10 +536,21 @@ class ResultTableFactory {
       case 'PM2.5':
         return '평균 농도(㎍/㎥)';
       case 'O3':
-        return '평균 농도(ppb)';
+        return '평균 농도(ppm)';
       default:
-        return '평균값';
+        return 'AN';
     }
+  }
+
+  static String _periodAverageLabel(List<int> months) {
+    if (months.isEmpty) return '평균';
+
+    final sorted = months.toSet().toList()..sort();
+    if (sorted.length == 1) {
+      return '${sorted.first}월 평균';
+    }
+
+    return '${sorted.first}-${sorted.last}월 평균';
   }
 
   static String _periodLabel(String period) {

@@ -1,3 +1,4 @@
+import 'package:boilerplate/common/common.dart';
 import 'package:flutter/material.dart';
 import 'rt_model.dart';
 
@@ -8,9 +9,9 @@ class ResultTable extends StatelessWidget {
 
   static const Color _headerBg = Color(0xFF1F3B68);
   static const Color _borderColor = Color(0xFFCCCCCC);
-  static const double _labelColW = 150.0;
-  static const double _dataColW = 95.0;
-  static const double _rowH = 34.0;
+  static final double _labelColW = Common.bigSize.value ? 100.0 : 80;
+  static final double _dataColW = Common.bigSize.value ? 85.0 : 65;
+  static const double _rowH = 35;
 
   @override
   Widget build(BuildContext context) {

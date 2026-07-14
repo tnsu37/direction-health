@@ -6,6 +6,7 @@ import 'package:boilerplate/pages/scenario/controller/scenario_controller.dart';
 import 'package:get/get.dart';
 import 'dart:typed_data';
 import 'package:flutter/animation.dart';
+import '../../../common/common.dart';
 
 // ──────────────────────────────────────────────
 //  Navigation model
@@ -38,17 +39,17 @@ enum ContentType {
 // dropdowns
 enum FilterConfig {
   exposureTemp, // [연중온도] 연도, 월, 시도, 시군구
-  exposureSummer, // [여름철온도] 연도, 월, 시도, 시군구
-  exposureAP, // [대기오염] 연도, 월, 시도, 시군구
-  healthImpactDeathSummer, // [사망 - 여름철온도] 시도, 시군구, 평가그룹
-  healthImpactDeathAP, // [사망 - 대기오염] 시도, 시군구, 평가그룹
+  exposureSummer, // [여름철 온도&오존] 연도, 월, 시도, 시군구
+  exposurePM, // [초미세먼지] 연도, 월, 시도, 시군구
+  healthImpactDeath, // [사망] 시도, 시군구, 평가그룹
   healthImpactScrubTyphus, // [쯔쯔가무시] 시도, 시군구, 평가그룹
   healthImpactMalaria, // [말라리아] 시도, 시군구, 평가그룹
   healthImpactWaterborne, // [수인성] 시도, 시군구, 평가그룹
   climateTempScenario, // [온도] 시도, 시군구, 기간, 시나리오, 기후모형
-  climatePm25Scenario, // [PM2.5] 시도, 시군구, 기간, 농도변화
+  climateAPScenario, // [대기오염] 시도, 시군구, 기간, 농도변화
   futureHealthTemp, // [사망 - 여름철온도] 시도, 시군구, 기간, 평가그룹, 시나리오, 기후모형, 적응정책
   futureHealthPm25, // [사망 - PM2.5] 시도, 시군구, 기간, 평가그룹, 적응정책, 농도변화
+  futureHealthO3, // [사망 - O3] 시도, 시군구, 기간, 평가그룹, 적응정책, 농도변화
   futureHealthScrubTyphus, // [쯔쯔가무시] 시도, 시군구, 기간, 평가그룹, 시나리오, 기후모형
   futureHealthMalaria, // [말라리아] 시도, 시군구, 기간, 평가그룹, 시나리오, 기후모형
   futureHealthWaterborne, // [수인성] 시도, 시군구, 기간, 평가그룹, 시나리오, 기후모형
@@ -96,57 +97,12 @@ class MainController extends GetxController
   //  Navigation tree definition
   // ──────────────────────────────────────────
 
-  static const Map<MainMenu, List<NavSubItem>> navTree = {
-    MainMenu.exposure: [
-      NavSubItem(id: 'annualTemp', label: '연중 온도'),
-      NavSubItem(id: 'summerTemp', label: '여름철 온도'),
-      NavSubItem(id: 'pm25', label: 'PM₂.₅'),
-      NavSubItem(id: 'o3', label: 'O₃'),
-    ],
-    MainMenu.healthImpact: [
-      NavSubItem(id: 'death', label: '사망', children: [
-        NavSubItem(id: 'death_summer', label: '여름철 온도'),
-        NavSubItem(id: 'death_pm25', label: 'PM₂.₅'),
-        NavSubItem(id: 'death_o3', label: 'O₃'),
-      ]),
-      NavSubItem(id: 'scrubTyphus', label: '쯔쯔가무시병', children: [
-        NavSubItem(id: 'scrub_annual', label: '연중 온도'),
-      ]),
-      NavSubItem(id: 'malaria', label: '말라리아', children: [
-        NavSubItem(id: 'malaria_annual', label: '연중 온도'),
-      ]),
-      NavSubItem(id: 'waterborne', label: '수인성 감염병', children: [
-        NavSubItem(id: 'waterborne_annual', label: '연중 온도'),
-      ]),
-    ],
-    MainMenu.climateScenario: [
-      NavSubItem(id: 'annualTemp', label: '연중 온도'),
-      NavSubItem(id: 'summerTemp', label: '여름철 온도'),
-      NavSubItem(id: 'pm25', label: 'PM₂.₅'),
-    ],
-    MainMenu.futureHealth: [
-      NavSubItem(id: 'death', label: '사망', children: [
-        NavSubItem(id: 'death_summer', label: '여름철 온도'),
-        NavSubItem(id: 'death_pm25', label: 'PM₂.₅'),
-      ]),
-      NavSubItem(id: 'scrubTyphus', label: '쯔쯔가무시병', children: [
-        NavSubItem(id: 'scrub_annual', label: '연중 온도'),
-      ]),
-      NavSubItem(id: 'malaria', label: '말라리아', children: [
-        NavSubItem(id: 'malaria_annual', label: '연중 온도'),
-      ]),
-      NavSubItem(id: 'waterborne', label: '수인성 감염병', children: [
-        NavSubItem(id: 'waterborne_annual', label: '연중 온도'),
-      ]),
-    ],
-  };
-
   // ──────────────────────────────────────────
   //  Computed properties
   // ──────────────────────────────────────────
 
   List<NavSubItem> get currentNavItems =>
-      navTree[selectedMenu.value] ?? const [];
+      Common.navTree[selectedMenu.value] ?? const [];
 
   String get menuLabel => const {
         MainMenu.exposure: '과거노출',
@@ -196,40 +152,44 @@ class MainController extends GetxController
       case MainMenu.exposure:
         return selectedSubId.value == 'annualTemp'
             ? FilterConfig.exposureTemp
-            : selectedSubId.value == 'summerTemp'
-                ? FilterConfig.exposureSummer
-                : FilterConfig.exposureAP;
+            : selectedSubId.value == 'pm25'
+                ? FilterConfig.exposurePM
+                : FilterConfig.exposureSummer;
       case MainMenu.healthImpact:
-        return selectedSubId.value == 'death_summer'
-            ? FilterConfig.healthImpactDeathSummer
-            : ['death_pm25', 'death_o3'].contains(selectedSubId.value)
-                ? FilterConfig.healthImpactDeathAP
-                : selectedSubId.value == 'scrub_annual'
-                    ? FilterConfig.healthImpactScrubTyphus
-                    : selectedSubId.value == 'malaria_annual'
-                        ? FilterConfig.healthImpactMalaria
-                        : FilterConfig.healthImpactWaterborne;
+        return selectedSubId.value.contains('death')
+            ? FilterConfig.healthImpactDeath
+            : selectedSubId.value == 'scrub_annual'
+                ? FilterConfig.healthImpactScrubTyphus
+                : selectedSubId.value == 'malaria_annual'
+                    ? FilterConfig.healthImpactMalaria
+                    : FilterConfig.healthImpactWaterborne;
       case MainMenu.climateScenario:
-        return selectedSubId.value == 'pm25'
-            ? FilterConfig.climatePm25Scenario
+        return ['pm25', 'o3'].contains(selectedSubId.value)
+            ? FilterConfig.climateAPScenario
             : FilterConfig.climateTempScenario;
       case MainMenu.futureHealth:
         return selectedSubId.value == 'death_pm25'
             ? FilterConfig.futureHealthPm25
-            : selectedSubId.value == 'death_summer'
-                ? FilterConfig.futureHealthTemp
-                : selectedSubId.value == 'scrub_annual'
-                    ? FilterConfig.futureHealthScrubTyphus
-                    : selectedSubId.value == 'malaria_annual'
-                        ? FilterConfig.futureHealthMalaria
-                        : FilterConfig.futureHealthWaterborne;
+            : selectedSubId.value == 'death_o3'
+                ? FilterConfig.futureHealthO3
+                : selectedSubId.value == 'death_summer'
+                    ? FilterConfig.futureHealthTemp
+                    : selectedSubId.value == 'scrub_annual'
+                        ? FilterConfig.futureHealthScrubTyphus
+                        : selectedSubId.value == 'malaria_annual'
+                            ? FilterConfig.futureHealthMalaria
+                            : FilterConfig.futureHealthWaterborne;
     }
   }
 
   List<String> get sgg {
     sggList.clear();
-    sggList.addAll(Common.sgg[filterSido.value]!);
-    return sggList;
+    if (selectedSubId.value.contains('malaria')) {
+      sggList.addAll(Common.sgg2[filterSido.value]!);
+    } else {
+      sggList.addAll(Common.sgg1[filterSido.value]!);
+    }
+    return sggList.value;
   }
 
   String get filterRcm => filterClimateModels.join(', ');
@@ -240,7 +200,7 @@ class MainController extends GetxController
 
   void selectMenu(MainMenu menu) {
     selectedMenu.value = menu;
-    final items = navTree[menu]!;
+    final items = Common.navTree[menu]!;
     final first = items.first;
     if (first.children.isNotEmpty) {
       expandedParentId.value = [first.id];
@@ -255,7 +215,7 @@ class MainController extends GetxController
   void selectTopMenuAndSub(MainMenu menu, String subId) {
     selectedMenu.value = menu;
 
-    for (final item in navTree[menu]!) {
+    for (final item in Common.navTree[menu]!) {
       // subId가 부모 항목인 경우 → 첫 자식을 선택
       if (item.id == subId) {
         if (item.children.isNotEmpty) {
@@ -343,7 +303,7 @@ class MainController extends GetxController
   // ──────────────────────────────────────────
 
   static List<String> topLevelLabelsFor(MainMenu menu) {
-    return navTree[menu]!.map((e) => e.label).toList();
+    return Common.navTree[menu]!.map((e) => e.label).toList();
   }
 
   @override

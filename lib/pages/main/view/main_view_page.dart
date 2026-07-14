@@ -12,6 +12,7 @@ import '../../health_effects/view/health_effects_view_page.dart';
 import '../../scenario/view/scenario_view_page.dart';
 import '../../health_projection/view/health_projection_view_page.dart';
 import '../widget/side_nav_bar.dart';
+import '../../health_effects/view/health_effects_view_page.dart';
 
 class MainViewPage extends GetView<MainController> {
   const MainViewPage({super.key});
@@ -70,7 +71,7 @@ class MainViewPage extends GetView<MainController> {
                                         CrossAxisAlignment.start,
                                     children: [
                                       GlobalFilterBar(controller: controller),
-                                      ExposureViewPage()
+                                      HealthEffectsViewPage()
                                     ],
                                   ))),
                       ),

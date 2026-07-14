@@ -55,7 +55,7 @@ class GlobalFilterBar extends StatelessWidget {
           ], controller: controller),
         ]);
 
-      /// 과거노출 > 여름철 온도
+      /// 과거노출 > 여름철 온도 & 오존
       case FilterConfig.exposureSummer:
         return _FilterCard(rows: [
           _FilterRow(items: [
@@ -93,8 +93,8 @@ class GlobalFilterBar extends StatelessWidget {
           ], controller: controller),
         ]);
 
-      /// 과거노출 > 대기오염(PM2.5 & O3)
-      case FilterConfig.exposureAP:
+      /// 과거노출 > 초미세먼지(PM2.5)
+      case FilterConfig.exposurePM:
         return _FilterCard(rows: [
           _FilterRow(items: [
             _StyledDropdown(
@@ -132,7 +132,7 @@ class GlobalFilterBar extends StatelessWidget {
         ]);
 
       /// 건강영향 > 사망 > 여름철 온도
-      case FilterConfig.healthImpactDeathSummer:
+      case FilterConfig.healthImpactDeath:
         return _FilterCard(rows: [
           _FilterRow(items: [
             _StyledDropdown(
@@ -140,37 +140,6 @@ class GlobalFilterBar extends StatelessWidget {
               label: '시도',
               value: controller.filterSido.value,
               options: Common.sido1,
-              onChanged: (v) {
-                controller.filterSido.value = v!;
-                controller.filterSigungu.value = '전체';
-              },
-            )),
-            _StyledDropdown(
-                item: _DropdownItem(
-              label: '시군구',
-              value: controller.filterSigungu.value,
-              options: controller.sgg,
-              onChanged: (v) => controller.filterSigungu.value = v!,
-            )),
-            _StyledDropdown(
-                item: _DropdownItem(
-              label: '평가그룹',
-              value: controller.filterEvalGroup.value,
-              options: Common.evalGroups1,
-              onChanged: (v) => controller.filterEvalGroup.value = v!,
-            )),
-          ], controller: controller),
-        ]);
-
-      /// 건강영향 > 사망 > 대기오염(PM2.5 & O3)
-      case FilterConfig.healthImpactDeathAP:
-        return _FilterCard(rows: [
-          _FilterRow(items: [
-            _StyledDropdown(
-                item: _DropdownItem(
-              label: '시도',
-              value: controller.filterSido.value,
-              options: Common.sido2,
               onChanged: (v) {
                 controller.filterSido.value = v!;
                 controller.filterSigungu.value = '전체';
@@ -332,8 +301,8 @@ class GlobalFilterBar extends StatelessWidget {
           ], controller: controller),
         ]);
 
-      /// 기후변화 시나리오 > PM2.5
-      case FilterConfig.climatePm25Scenario:
+      /// 기후변화 시나리오 > AP(PM2.5 & O3)
+      case FilterConfig.climateAPScenario:
         return _FilterCard(rows: [
           _FilterRow(items: [
             _StyledDropdown(
@@ -364,12 +333,6 @@ class GlobalFilterBar extends StatelessWidget {
               value: controller.filterConcChange.value,
               onChanged: (v) => controller.filterConcChange.value = v,
             ),
-            // _DropdownItem(
-            //   label: '농도변화율',
-            //   value: controller.filterConcChange.value,
-            //   options: Common.concChanges,
-            //   onChanged: (v) => controller.filterConcChange.value = v!,
-            // ),
           ], controller: controller),
         ]);
 
@@ -476,19 +439,64 @@ class GlobalFilterBar extends StatelessWidget {
               ],
               controller: controller),
           _FilterRow(items: [
+            _ConcChangeSliderItem(
+              value: controller.filterConcChange.value,
+              onChanged: (v) => controller.filterConcChange.value = v,
+            ),
+          ], controller: controller),
+        ]);
+
+      /// 건강영향 미래 추정 > 사망 > 오존
+      case FilterConfig.futureHealthO3:
+        return _FilterCard(rows: [
+          _FilterRow(
+              showSearchBtn: false,
+              items: [
+                _StyledDropdown(
+                    item: _DropdownItem(
+                  label: '시도',
+                  value: controller.filterSido.value,
+                  options: Common.sido1,
+                  onChanged: (v) {
+                    controller.filterSido.value = v!;
+                    controller.filterSigungu.value = '전체';
+                  },
+                )),
+                _StyledDropdown(
+                    item: _DropdownItem(
+                  label: '시군구',
+                  value: controller.filterSigungu.value,
+                  options: controller.sgg,
+                  onChanged: (v) => controller.filterSigungu.value = v!,
+                )),
+                _StyledDropdown(
+                    item: _DropdownItem(
+                  label: '기간',
+                  value: controller.filterPeriod.value,
+                  options: Common.periods,
+                  onChanged: (v) => controller.filterPeriod.value = v!,
+                )),
+                _StyledDropdown(
+                    item: _DropdownItem(
+                  label: '평가그룹',
+                  value: controller.filterEvalGroup.value,
+                  options: Common.evalGroups1,
+                  onChanged: (v) => controller.filterEvalGroup.value = v!,
+                )),
+              ],
+              controller: controller),
+          _FilterRow(items: [
+            _ConcChangeSliderItem(
+              value: controller.filterConcChange.value,
+              onChanged: (v) => controller.filterConcChange.value = v,
+            ),
             _StyledDropdown(
                 item: _DropdownItem(
-              label: '적응정책',
-              value: controller.filterAdaptation.value,
-              options: Common.adaptations2,
-              onChanged: (v) => controller.filterAdaptation.value = v!,
+              label: '시나리오',
+              value: controller.filterScenario.value,
+              options: Common.scenarios,
+              onChanged: (v) => controller.filterScenario.value = v!,
             )),
-            // _DropdownItem(
-            //   label: '농도변화율',
-            //   value: controller.filterConcChange.value,
-            //   options: FilterOptions.concChanges,
-            //   onChanged: (v) => controller.filterConcChange.value = v!,
-            // ),
           ], controller: controller),
         ]);
 

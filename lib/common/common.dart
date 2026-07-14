@@ -176,7 +176,7 @@ class Common {
   static const Map<MainMenu, List<NavSubItem>> navTree = {
     MainMenu.exposure: [
       NavSubItem(id: 'annualTemp', label: '연중 온도'),
-      NavSubItem(id: 'summerTemp', label: '여름철온도'),
+      NavSubItem(id: 'summerTemp', label: '여름철 온도'),
       NavSubItem(id: 'pm25', label: 'PM₂.₅'),
       NavSubItem(id: 'o3', label: 'O₃'),
     ],
@@ -198,13 +198,15 @@ class Common {
     ],
     MainMenu.climateScenario: [
       NavSubItem(id: 'annualTemp', label: '연중 온도'),
-      NavSubItem(id: 'summerTemp', label: '여름철온도'),
+      NavSubItem(id: 'summerTemp', label: '여름철 온도'),
       NavSubItem(id: 'pm25', label: 'PM₂.₅'),
+      NavSubItem(id: 'o3', label: 'O₃'),
     ],
     MainMenu.futureHealth: [
       NavSubItem(id: 'death', label: '사망', children: [
         NavSubItem(id: 'death_summer', label: '여름철 온도'),
         NavSubItem(id: 'death_pm25', label: 'PM₂.₅'),
+        NavSubItem(id: 'death_o3', label: 'O₃'),
       ]),
       NavSubItem(id: 'scrubTyphus', label: '쯔쯔가무시병', children: [
         NavSubItem(id: 'scrub_annual', label: '연중 온도'),
@@ -292,11 +294,8 @@ class Common {
     '경상남도',
   ];
 
-  ///[시도] - 건강영향평가 > 말라리아
-  static const List<String> sido3 = ['전체', '인천광역시', '경기도', '강원도'];
-
-  ///[시도] - 건강영향미래추정 > 말라리아
-  static const List<String> sido4 = ['전체', '서울특별시', '인천광역시', '경기도', '강원도'];
+  ///[시도] -  말라리아
+  static const List<String> sido3 = ['전체', '서울특별시', '인천광역시', '경기도', '강원도'];
 
   static const List<String> periods = [
     '전체',
@@ -354,17 +353,18 @@ class Common {
   // ];
 
   static String unit(String subId) {
-    switch (subId) {
-      case 'pm25':
-        return 'μg/m³';
-      case 'o3':
-        return 'ppb';
-      default:
-        return '°C';
+    final id = subId.toLowerCase();
+
+    if (id.contains('pm25')) {
+      return 'μg/m³';
     }
+    if (id.contains('o3')) {
+      return 'ppm';
+    }
+    return '°C';
   }
 
-  static Map<String, List<String>> sgg = {
+  static Map<String, List<String>> sgg1 = {
     '전체': ['전체'],
     '서울특별시': [
       '전체',
@@ -413,7 +413,7 @@ class Common {
       '중구',
       '해운대구'
     ],
-    '대구광역시': ['전체', '중구', '동구', '서구', '남구', '북구', '수성구', '달서구', '달성군'],
+    '대구광역시': ['전체', '중구', '동구', '서구', '남구', '북구', '수성구', '달서구', '달성군', '군위군'],
     '인천광역시': [
       '전체',
       '강화군',
@@ -566,7 +566,6 @@ class Common {
       '경주시',
       '고령군',
       '구미시',
-      '군위군',
       '김천시',
       '문경시',
       '봉화군',
@@ -608,5 +607,27 @@ class Common {
       '합천군'
     ],
     '제주특별자치도': ['전체', '서귀포시', '제주시']
+  };
+
+  static Map<String, List<String>> sgg2 = {
+    '전체': ['전체'],
+    '경기도': [
+      '전체',
+      '파주시',
+      '양주시',
+      '고양시',
+      '김포시',
+      '고양시',
+      '연천군',
+      '포천시',
+      '부천시',
+      '고양시',
+      '성남시',
+      '남양주시',
+      '의정부시',
+    ],
+    '인천광역시': ['전체', '강화군', '서구', '계양구', '부평구', '남동구', '연수구', '미추홀구', '중구'],
+    '강원도': ['전체', '철원군'],
+    '서울특별시': ['전체', '강서구', '양천구', '관악구', '영등포구']
   };
 }

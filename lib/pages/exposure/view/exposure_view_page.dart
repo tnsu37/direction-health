@@ -34,11 +34,15 @@ class ExposureViewPage extends GetView<ExposureController> {
               child: Obx(() => TimeSeries(
                   timeseriesData: controller.result.value.timeseriesData)),
             ),
+            const SizedBox(height: 15),
             Obx(() {
+              final result = controller.result.value;
+
               final tableSet = ResultTableFactory.fromPastExposure(
-                request: controller.fetchedRequest,
-                data: controller.result.value,
+                request: result.request,
+                data: result,
               );
+
               return ResultTable(tableSet: tableSet);
             }),
           ],
