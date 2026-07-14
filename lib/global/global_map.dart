@@ -85,6 +85,7 @@ class GlobalMap extends StatefulWidget {
     this.unit = '',
     this.height = 638,
     this.sido,
+    this.highlightSggName,
     this.onDistrictTapped,
   });
 
@@ -104,6 +105,9 @@ class GlobalMap extends StatefulWidget {
 
   /// 특정 시도만 표시할 때 해당 시도명 전달 (null 또는 '전체' → 전국)
   final String? sido;
+
+  /// 강조 표시할 시군구 이름 (e.g. '강서구') — null 또는 '전체'면 비활성
+  final String? highlightSggName;
 
   /// 시군구 탭 콜백 (이름, 값)
   final void Function(String name, double? value)? onDistrictTapped;
@@ -154,7 +158,9 @@ class _KoreaMapWidgetState extends State<GlobalMap> {
   @override
   void didUpdateWidget(GlobalMap old) {
     super.didUpdateWidget(old);
-    if (old.mapData != widget.mapData || old.sido != widget.sido) {
+    if (old.mapData != widget.mapData ||
+        old.sido != widget.sido ||
+        old.highlightSggName != widget.highlightSggName) {
       _buildFeatures();
     }
   }
@@ -375,15 +381,21 @@ class _KoreaMapWidgetState extends State<GlobalMap> {
             PolygonLayer(
               polygonCulling: false,
               polygons: features.map((f) {
-                final isHovered = _hovered == f;
                 final fillColor = scale.colorFor(f.value);
+                final highlightName = widget.highlightSggName;
+                final isHighlighted = highlightName != null &&
+                    highlightName.isNotEmpty &&
+                    highlightName != '전체' &&
+                    f.sggName.endsWith(highlightName);
 
                 return Polygon(
                   points: f.outer,
                   holePointsList: f.holes,
                   color: fillColor.withOpacity(0.85),
-                  borderColor: Colors.black.withOpacity(0.4),
-                  borderStrokeWidth: 0.5,
+                  borderColor: isHighlighted
+                      ? Colors.black
+                      : Colors.black.withOpacity(0.4),
+                  borderStrokeWidth: isHighlighted ? 2 : 0.5,
                   isFilled: true,
                 );
               }).toList(),

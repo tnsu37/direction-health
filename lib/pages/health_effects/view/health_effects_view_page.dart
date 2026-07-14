@@ -22,6 +22,7 @@ class HealthEffectsViewPage extends GetView<HealthEffectsController> {
                 label: MainController.to.selectedSubLabel,
                 title: '노출 - ${controller.mapTitle}',
                 unit: Common.unit(MainController.to.selectedSubId.value),
+                highlightSggName: controller.fetchedRequest['sgg_']?.toString(),
               )),
         ),
         const SizedBox(width: 20),
@@ -29,10 +30,13 @@ class HealthEffectsViewPage extends GetView<HealthEffectsController> {
         SizedBox(
           width: Common.bigSize.value ? 638 : 450,
           child: Obx(() => GlobalMap(
-              mapData: controller.riskMapData,
-              sido: controller.fetchedSido,
-              label: controller.riskUnit,
-              title: '건강영향 - ${controller.mapTitle}')),
+                mapData: controller.riskMapData,
+                sido: controller.fetchedSido,
+                label: controller.riskUnit,
+                title: '건강영향 - ${controller.mapTitle}',
+                highlightSggName:
+                    controller.fetchedRequest['sgg_']?.toString(),
+              )),
         ),
       ],
     );

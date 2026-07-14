@@ -23,6 +23,8 @@ class ExposureViewPage extends GetView<ExposureController> {
                 label: MainController.to.selectedSubLabel,
                 title: controller.mapTitle,
                 unit: Common.unit(MainController.to.selectedSubId.value),
+                highlightSggName:
+                    controller.fetchedRequest['sgg_']?.toString(),
               )),
         ),
         const SizedBox(width: 20),

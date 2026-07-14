@@ -16,8 +16,8 @@ class HealthEffectsController extends GetxController {
   Map<String, dynamic> fetchedRequest = {
     'mode': '말라리아',
     'eval_group': '전체',
-    'sido_': '전체',
-    'sgg_': '전체',
+    'sido_': '서울특별시',
+    'sgg_': '강서구',
   };
 
   List<MapDataEntry> get exposureMapData => result.value.exposureData
