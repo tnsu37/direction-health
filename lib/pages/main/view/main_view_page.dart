@@ -12,7 +12,6 @@ import '../../health_effects/view/health_effects_view_page.dart';
 import '../../scenario/view/scenario_view_page.dart';
 import '../../health_projection/view/health_projection_view_page.dart';
 import '../widget/side_nav_bar.dart';
-import '../../health_effects/view/health_effects_view_page.dart';
 
 class MainViewPage extends GetView<MainController> {
   const MainViewPage({super.key});
@@ -56,9 +55,6 @@ class MainViewPage extends GetView<MainController> {
                               selectLeaf: controller.selectLeaf,
                             )),
                       ),
-                      // SingleChildScrollView(
-                      //     child: _contentWidget(controller.contentType)),
-
                       // Main content area
                       Expanded(
                         child: SingleChildScrollView(
@@ -71,7 +67,8 @@ class MainViewPage extends GetView<MainController> {
                                         CrossAxisAlignment.start,
                                     children: [
                                       GlobalFilterBar(controller: controller),
-                                      HealthEffectsViewPage()
+                                      pageWidgetList[
+                                          controller.selectedMenu.value.index],
                                     ],
                                   ))),
                       ),
@@ -87,27 +84,5 @@ class MainViewPage extends GetView<MainController> {
                 selectTopMenuAndSub: controller.selectTopMenuAndSub)),
           ],
         ));
-  }
-
-  Widget _contentWidget(ContentType type) {
-    switch (type) {
-      case ContentType.exposureMap:
-        return Text('지도');
-      //return ExposureContent(controller: controller);
-
-      case ContentType.healthImpact:
-        return Text('건강영향');
-      //return HealthImpactContent(controller: controller);
-
-      case ContentType.climateTempLine:
-        return Text('온도시계열');
-      case ContentType.climatePm25Bar:
-        return Text('대기오염바');
-      //return ClimateScenarioContent(controller: controller);
-
-      case ContentType.futureHealthBar:
-        return Text('미래영향바');
-      //return FutureHealthContent(controller: controller);
-    }
   }
 }

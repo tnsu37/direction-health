@@ -71,6 +71,42 @@ class ResultTableFactory {
     return ResultTableSet.single(ResultTableModel(headers: headers, rows: rows));
   }
 
+  // 특정 시군구 선택 시 요약표 (평균 노출값 + AN).
+  // API는 시군구 필터 없이 시도 전체 exposure/risk data를 반환하므로(하이라이트용),
+  // 선택된 시군구 1건만 골라 보여준다. AF/95%CI는 API 미제공(AN 결정으로 대체).
+  static ResultTableSet fromHealthEffectsDetail({
+    required Map<String, dynamic> request,
+    required PastHealthRiskResponse data,
+    required String unitLabel,
+  }) {
+    final sgg = request['sgg_']?.toString() ?? '전체';
+    if (sgg == '전체' || sgg.isEmpty) return ResultTableSet([]);
+
+    final mode = request['mode']?.toString() ?? '';
+    final isDeath = mode == '여름철 온도' || mode == 'PM2.5' || mode == 'O3';
+    final anLabel = isDeath ? '초과사망자수 (명)' : '초과발생건수 (건)';
+
+    final exp = data.exposureData.where((e) => e.sggName.endsWith(sgg)).firstOrNull;
+    final risk = data.riskData.where((r) => r.sggName.endsWith(sgg)).firstOrNull;
+    if (exp == null && risk == null) return ResultTableSet([]);
+
+    final headers = <RtCell>[
+      const RtCell('시군구', bold: true),
+      RtCell('평균 노출값($unitLabel)', bold: true),
+      RtCell(anLabel, bold: true),
+    ];
+
+    final rows = <List<RtCell>>[
+      [
+        RtCell(risk?.sggName ?? exp?.sggName ?? sgg),
+        RtCell(exp != null ? exp.expVal.toStringAsFixed(2) : '-'),
+        RtCell(risk != null ? risk.anVal.toStringAsFixed(2) : '-'),
+      ],
+    ];
+
+    return ResultTableSet.single(ResultTableModel(headers: headers, rows: rows));
+  }
+
   static ResultTableSet fromFutureProjection({
     required Map<String, dynamic> request,
     required FutureProjectionResponse data,
@@ -573,8 +609,6 @@ class ResultTableFactory {
       case 'none':
       case null:
         return '정책 없음';
-      case 'reduction':
-        return '저감 정책';
       case 'greenness':
         return '녹지';
       case 'shelter':

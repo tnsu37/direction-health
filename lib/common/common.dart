@@ -340,9 +340,6 @@ class Common {
   ///[적응정책] 여름철온도
   static const List<String> adaptations1 = ['없음', '녹지', '그늘막쉼터'];
 
-  ///[적응정책] PM2.5
-  static const List<String> adaptations2 = ['없음', '긴급저감정책'];
-
   // static List<ValueItem<int>> gcm = const [
   //   ValueItem(label: '앙상블', value: 0),
   //   ValueItem(label: 'WRF', value: 1),

@@ -16,8 +16,9 @@ class HealthProjectionController extends GetxController {
   Future<void> fetch() async {
     final mc = MainController.to;
     final subId = mc.selectedSubId.value;
-    final isTemp = subId == 'death_summer';
-    final isAP = subId == 'death_pm25';
+    final isPM25 = subId == 'death_pm25';
+    final isO3 = subId == 'death_o3';
+    final isAP = isPM25 || isO3; // 대기오염(PM2.5/O3): change_ap_ 필수, gcm_ 미사용
     Common.isLoading.value = true;
     mc.animationController.repeat();
     error.value = '';
@@ -28,15 +29,15 @@ class HealthProjectionController extends GetxController {
         sido_: mc.filterSido.value,
         sgg_: mc.filterSigungu.value,
         targetPeriod: ApiMap.period(mc.filterPeriod.value),
-        ssp_: (isTemp || !isAP) ? ApiMap.ssp(mc.filterScenario.value) : null,
-        gcm_: (isTemp || !isAP) ? ApiMap.gcm(mc.filterClimateModels) : null,
+        ssp_: !isPM25 ? ApiMap.ssp(mc.filterScenario.value) : null,
+        gcm_: !isAP ? ApiMap.gcm(mc.filterClimateModels) : null,
         policy_: ApiMap.policy(mc.filterAdaptation.value),
         changeAp_: isAP ? mc.filterConcChange.value : null,
       );
       fetchedRequest = {
         'mode': ApiMap.mode(subId),
-        'ssp_': (isTemp || !isAP) ? ApiMap.ssp(mc.filterScenario.value) : null,
-        'gcm_': (isTemp || !isAP) ? ApiMap.gcm(mc.filterClimateModels) : null,
+        'ssp_': !isPM25 ? ApiMap.ssp(mc.filterScenario.value) : null,
+        'gcm_': !isAP ? ApiMap.gcm(mc.filterClimateModels) : null,
         'change_ap_': isAP ? mc.filterConcChange.value : null,
         'policy_': ApiMap.policy(mc.filterAdaptation.value),
       };

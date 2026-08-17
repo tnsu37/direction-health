@@ -6,6 +6,7 @@ import 'package:get/get.dart';
 import 'package:flutter/material.dart';
 import '../controller/scenario_controller.dart';
 import '../widget/scenario_ap_chart.dart';
+import '../widget/scenario_ap_timeseries_chart.dart';
 import '../widget/scenario_temp_chart.dart';
 
 class ScenarioViewPage extends GetView<ScenarioController> {
@@ -36,17 +37,29 @@ class ScenarioViewPage extends GetView<ScenarioController> {
       );
 
       if (isAP) {
+        final targetPeriod = (request['target_period'] ?? '전체').toString();
+        final changeApRaw = request['change_ap_'] ?? request['change_ap'];
+        final changeAp = (changeApRaw is num) ? changeApRaw.toInt() : 0;
+        // 기간·농도변화를 아직 좁혀 선택하지 않은 디폴트/지역선택 상태 → 시계열 라인차트
+        final isDefault = targetPeriod == '전체' && changeAp == 0;
+
         return Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             SizedBox(
               width: chartWidth,
-              child: ScenarioApChart(
-                data: data,
-                mode: mode,
-                chartTitle: chartTitle,
-                targetPeriod: (request['target_period'] ?? '전체').toString(),
-              ),
+              child: isDefault
+                  ? ScenarioApTimeSeriesChart(
+                      data: data,
+                      mode: mode,
+                      chartTitle: chartTitle,
+                    )
+                  : ScenarioApChart(
+                      data: data,
+                      mode: mode,
+                      chartTitle: chartTitle,
+                      targetPeriod: targetPeriod,
+                    ),
             ),
             const SizedBox(width: 24),
             ResultTable(tableSet: tableSet),

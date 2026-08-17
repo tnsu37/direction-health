@@ -75,14 +75,13 @@ class ApiMap {
   }
 
   /// 적응정책 라벨 → policy_
+  /// PM2.5·O3·감염병은 항상 "none" 고정(온도만 녹지/그늘막쉼터 선택 가능)
   static String policy(String v) {
     switch (v) {
       case '녹지':
         return 'greenness';
       case '그늘막쉼터':
         return 'shelter';
-      case '긴급저감정책':
-        return 'reduction';
       case '없음':
       default:
         return 'none';
