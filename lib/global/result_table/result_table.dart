@@ -3,14 +3,15 @@ import 'package:flutter/material.dart';
 import 'rt_model.dart';
 
 class ResultTable extends StatelessWidget {
-  const ResultTable({super.key, required this.tableSet});
+  const ResultTable({super.key, required this.tableSet, this.headerH});
 
   final ResultTableSet tableSet;
+  final double? headerH;
 
   static const Color _headerBg = Color(0xFF1F3B68);
   static const Color _borderColor = Color(0xFFCCCCCC);
-  static final double _labelColW = Common.bigSize.value ? 100.0 : 80;
-  static final double _dataColW = Common.bigSize.value ? 85.0 : 65;
+  static final double _labelColW = Common.bigSize.value ? 118 : 80;
+  static final double _dataColW = Common.bigSize.value ? 95 : 65;
   static const double _rowH = 35;
 
   @override
@@ -27,7 +28,7 @@ class ResultTable extends StatelessWidget {
           child: SingleChildScrollView(
             scrollDirection: Axis.horizontal,
             child: Container(
-              decoration: BoxDecoration(
+              decoration: const BoxDecoration(
                 border: Border(
                   left: BorderSide(color: _borderColor, width: 0.5),
                   top: BorderSide(color: _borderColor, width: 0.5),
@@ -58,6 +59,7 @@ class ResultTable extends StatelessWidget {
         return _cell(
           g.label,
           width: w,
+          height: _rowH,
           isHeader: true,
           bold: true,
         );
@@ -74,6 +76,7 @@ class ResultTable extends StatelessWidget {
         return _cell(
           cell.text,
           width: w,
+          height: isHeader ? headerH ?? _rowH : _rowH,
           isHeader: isHeader,
           bold: isHeader || cell.bold,
           textColor: cell.textColor,
@@ -86,16 +89,17 @@ class ResultTable extends StatelessWidget {
     String text, {
     required double width,
     required bool isHeader,
+    required double height,
     bool bold = false,
     Color? textColor,
   }) {
     return Container(
       width: width,
-      height: _rowH,
+      height: height,
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
         color: isHeader ? _headerBg : null,
-        border: Border(
+        border: const Border(
           right: BorderSide(color: _borderColor, width: 0.5),
           bottom: BorderSide(color: _borderColor, width: 0.5),
         ),
@@ -105,7 +109,7 @@ class ResultTable extends StatelessWidget {
         text,
         textAlign: TextAlign.center,
         style: TextStyle(
-          fontSize: 12,
+          fontSize: 13,
           color: isHeader ? Colors.white : (textColor ?? Colors.black87),
           fontWeight: bold ? FontWeight.bold : FontWeight.w400,
         ),

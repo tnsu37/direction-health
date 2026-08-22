@@ -116,7 +116,9 @@ class ScenarioViewPage extends GetView<ScenarioController> {
     if (raw == null) return ['Ensemble'];
     if (raw is String) return [raw == '앙상블' ? 'Ensemble' : raw];
     if (raw is List) {
-      return raw.map((e) => e.toString() == '앙상블' ? 'Ensemble' : e.toString()).toList();
+      return raw
+          .map((e) => e.toString() == '앙상블' ? 'Ensemble' : e.toString())
+          .toList();
     }
     return ['Ensemble'];
   }

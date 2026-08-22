@@ -35,7 +35,7 @@ class HealthProjectionViewPage extends GetView<HealthProjectionController> {
             ),
           ),
           const SizedBox(width: 24),
-          ResultTable(tableSet: tableSet),
+          ResultTable(tableSet: tableSet, headerH: 50),
         ],
       );
     });

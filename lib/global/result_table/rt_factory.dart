@@ -29,7 +29,8 @@ class ResultTableFactory {
     } else if (!isAllYear && isAllMonth) {
       return ResultTableSet.single(_pastCase12(data, yearStr, unitLabel, mode));
     } else if (isAllYear && !isAllMonth) {
-      return ResultTableSet.single(_pastCase13(data, monthStr, unitLabel, mode));
+      return ResultTableSet.single(
+          _pastCase13(data, monthStr, unitLabel, mode));
     } else {
       return ResultTableSet.single(
           _pastCase14(data, yearStr, monthStr, unitLabel, mode));
@@ -61,14 +62,17 @@ class ResultTableFactory {
       RtCell(anLabel, bold: true),
     ];
 
-    final rows = data.riskData.map((r) => <RtCell>[
-          RtCell(r.sggName),
-          RtCell(r.anVal.toStringAsFixed(2)),
-        ]).toList();
+    final rows = data.riskData
+        .map((r) => <RtCell>[
+              RtCell(r.sggName),
+              RtCell(r.anVal.toStringAsFixed(2)),
+            ])
+        .toList();
 
     if (rows.isEmpty) return ResultTableSet([]);
 
-    return ResultTableSet.single(ResultTableModel(headers: headers, rows: rows));
+    return ResultTableSet.single(
+        ResultTableModel(headers: headers, rows: rows));
   }
 
   // 특정 시군구 선택 시 요약표 (평균 노출값 + AN).
@@ -86,8 +90,10 @@ class ResultTableFactory {
     final isDeath = mode == '여름철 온도' || mode == 'PM2.5' || mode == 'O3';
     final anLabel = isDeath ? '초과사망자수 (명)' : '초과발생건수 (건)';
 
-    final exp = data.exposureData.where((e) => e.sggName.endsWith(sgg)).firstOrNull;
-    final risk = data.riskData.where((r) => r.sggName.endsWith(sgg)).firstOrNull;
+    final exp =
+        data.exposureData.where((e) => e.sggName.endsWith(sgg)).firstOrNull;
+    final risk =
+        data.riskData.where((r) => r.sggName.endsWith(sgg)).firstOrNull;
     if (exp == null && risk == null) return ResultTableSet([]);
 
     final headers = <RtCell>[
@@ -104,7 +110,8 @@ class ResultTableFactory {
       ],
     ];
 
-    return ResultTableSet.single(ResultTableModel(headers: headers, rows: rows));
+    return ResultTableSet.single(
+        ResultTableModel(headers: headers, rows: rows));
   }
 
   static ResultTableSet fromFutureProjection({
@@ -315,19 +322,25 @@ class ResultTableFactory {
       pivot[p.gcm]![p.period] = {'mean': p.meanVal, 'sd': p.sdVal};
     }
 
-    final sortedPeriods = periodOrder.keys.toList()
-      ..sort((a, b) {
-        if (a.contains('Baseline')) return -1;
-        if (b.contains('Baseline')) return 1;
-        return a.compareTo(b);
-      });
-    final sortedGcms = gcmOrder.keys.toList()
-      ..sort((a, b) => gcmOrder[a]!.compareTo(gcmOrder[b]!));
+    // 기준 기간(Baseline) 열은 표에서 제외
+    final sortedPeriods = periodOrder.keys
+        .where((p) => !p.contains('Baseline'))
+        .toList()
+      ..sort((a, b) => a.compareTo(b));
+
+    // 관측치(Historical) 행은 표에서 제외, 앙상블은 항상 마지막 행
+    final sortedGcms =
+        gcmOrder.keys.where((g) => g != '관측치(Historical)').toList()
+          ..sort((a, b) {
+            if (a == 'Ensemble') return 1;
+            if (b == 'Ensemble') return -1;
+            return gcmOrder[a]!.compareTo(gcmOrder[b]!);
+          });
 
     // Group headers: blank + one group per period (span=2)
     final groupHeaders = <RtHeaderGroup>[
       const RtHeaderGroup('', 1),
-      ...sortedPeriods.map((p) => RtHeaderGroup(_periodLabel(p), 2)),
+      ...sortedPeriods.map((p) => RtHeaderGroup(_periodLabelLine(p), 2)),
     ];
 
     final headers = <RtCell>[
@@ -430,7 +443,8 @@ class ResultTableFactory {
     }
 
     final sortedAbs = changePivot.keys.toList()..sort();
-    final periodLabel = firstPeriod != null ? _periodLabel(firstPeriod) : '';
+    final periodLabel =
+        firstPeriod != null ? _periodLabelLine(firstPeriod) : '';
 
     final table2 = ResultTableModel(
       headers: [
@@ -599,7 +613,13 @@ class ResultTableFactory {
   }
 
   static String _periodLabel(String period) {
-    if (period.contains('Baseline')) return '기준 기간';
+    if (period.contains('2031-2040')) return '근미래\n2031-2040';
+    if (period.contains('2041-2060')) return '중미래\n2041-2060';
+    if (period.contains('2081-2100')) return '먼미래\n2081-2100';
+    return period;
+  }
+
+  static String _periodLabelLine(String period) {
     if (period.contains('2031-2040')) return '근미래(2031-2040)';
     if (period.contains('2041-2060')) return '중미래(2041-2060)';
     if (period.contains('2081-2100')) return '먼미래(2081-2100)';
