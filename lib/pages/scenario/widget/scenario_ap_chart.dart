@@ -19,6 +19,8 @@ class ScenarioApChart extends StatelessWidget {
   static const Color _barColor = Color(0xFF1A3A6B);
   static const Color _baselineColor = Color(0xFFD32F2F);
 
+  int get _decimals => mode == 'O3' ? 2 : 1;
+
   @override
   Widget build(BuildContext context) {
     // 표시할 기간 결정 — '전체'이면 첫 번째 non-baseline 기간
@@ -100,7 +102,7 @@ class ScenarioApChart extends StatelessWidget {
                     final sign = ca > 0 ? '+' : '';
                     final label = ca == 0 ? '기준(0%)' : '$sign$ca%';
                     return BarTooltipItem(
-                      '$label\n${rod.toY.toStringAsFixed(2)}',
+                      '$label\n${rod.toY.toStringAsFixed(_decimals)}',
                       const TextStyle(color: Colors.white, fontSize: 11),
                     );
                   },
@@ -112,7 +114,14 @@ class ScenarioApChart extends StatelessWidget {
                 leftTitles: AxisTitles(
                   axisNameWidget: Text(unitLabel,
                       style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
-                  sideTitles: const SideTitles(showTitles: true, reservedSize: 52),
+                  sideTitles: SideTitles(
+                    showTitles: true,
+                    reservedSize: 52,
+                    getTitlesWidget: (value, meta) => Text(
+                      value.toStringAsFixed(_decimals),
+                      style: const TextStyle(fontSize: 10, color: Colors.black87),
+                    ),
+                  ),
                 ),
                 bottomTitles: AxisTitles(
                   axisNameWidget: const Padding(

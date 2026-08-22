@@ -39,7 +39,8 @@ enum ContentType {
 // dropdowns
 enum FilterConfig {
   exposureTemp, // [연중온도] 연도, 월, 시도, 시군구
-  exposureSummer, // [여름철 온도&오존] 연도, 월, 시도, 시군구
+  exposureSummerTemp, // [여름철 온도] 연도, 월, 시도, 시군구
+  exposureSummerO3, // [여름철 오존] 연도, 월, 시도, 시군구
   exposurePM, // [초미세먼지] 연도, 월, 시도, 시군구
   healthImpactDeath, // [사망] 시도, 시군구, 평가그룹
   healthImpactScrubTyphus, // [쯔쯔가무시] 시도, 시군구, 평가그룹
@@ -154,7 +155,9 @@ class MainController extends GetxController
             ? FilterConfig.exposureTemp
             : selectedSubId.value == 'pm25'
                 ? FilterConfig.exposurePM
-                : FilterConfig.exposureSummer;
+                : selectedSubId.value == 'summerTemp'
+                    ? FilterConfig.exposureSummerTemp
+                    : FilterConfig.exposureSummerO3;
       case MainMenu.healthImpact:
         return selectedSubId.value.contains('death')
             ? FilterConfig.healthImpactDeath
@@ -275,6 +278,8 @@ class MainController extends GetxController
     filterClimateModels.assignAll(defaultClimateModels);
     filterAdaptation.value = '없음';
     filterConcChange.value = 0;
+    // 페이지/옵션 진입 시 디폴트 값으로 자동 조회
+    search();
   }
 
   void setClimateModels(List<String> models) {
@@ -308,6 +313,13 @@ class MainController extends GetxController
 
   @override
   void onInit() {
+    animationController = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 3),
+    );
+
+    animationController.forward();
+
     if (Get.arguments != null) {
       int index = Get.arguments;
       switch (index) {
@@ -318,13 +330,10 @@ class MainController extends GetxController
         case 2:
           selectMenu(MainMenu.climateScenario);
       }
+    } else {
+      // 최초 진입(기본 랜딩 탭)도 디폴트 값으로 자동 조회
+      search();
     }
-    animationController = AnimationController(
-      vsync: this,
-      duration: const Duration(seconds: 3),
-    );
-
-    animationController.forward();
 
     super.onInit();
   }

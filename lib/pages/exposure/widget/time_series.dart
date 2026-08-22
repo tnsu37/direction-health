@@ -2,22 +2,75 @@ import 'package:boilerplate/common/api.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 
+// x축 라벨 표기 방식 4종
+// (1) daily: 연도&월 모두 선택 → 1,5,9,...,29일만 표기
+// (2) allYears: 월만 선택(연도 전체) → 모든 연도 표기
+// (3) allMonths: 연도만 선택(월 전체) → 모든 월 표기
+// (4) yearlyDefault: 전체(디폴트) → 매년 대표 월(여름철 온도=9월, 그 외=12월)만 표기
+enum _XAxisLabelMode { daily, allYears, allMonths, yearlyDefault }
+
 class TimeSeries extends StatelessWidget {
   final List<TimeSeriesEntry> timeseriesData;
   final String yTitle;
   final String xTitle;
+  final String mode;
 
   const TimeSeries({
     super.key,
     required this.timeseriesData,
     this.yTitle = '평균온도(℃)',
     this.xTitle = '날짜',
+    this.mode = '',
   });
+
+  int get _decimals => mode == 'O3' ? 2 : 1;
+
+  _XAxisLabelMode _detectXAxisLabelMode() {
+    if (timeseriesData.any((e) => e.period.length >= 10)) {
+      return _XAxisLabelMode.daily;
+    }
+    final years = timeseriesData.map((e) => e.year).toSet();
+    final months = timeseriesData.map((e) => e.month).toSet();
+    if (years.length <= 1 && months.length > 1)
+      return _XAxisLabelMode.allMonths;
+    if (months.length <= 1 && years.length > 1) return _XAxisLabelMode.allYears;
+    return _XAxisLabelMode.yearlyDefault;
+  }
+
+  bool _shouldLabel(_XAxisLabelMode xMode, TimeSeriesEntry e) {
+    switch (xMode) {
+      case _XAxisLabelMode.daily:
+        if (e.period.length < 10) return false;
+        final day = int.tryParse(e.period.substring(8, 10)) ?? 0;
+        return day <= 29 && (day - 1) % 4 == 0;
+      case _XAxisLabelMode.allYears:
+      case _XAxisLabelMode.allMonths:
+        return true;
+      case _XAxisLabelMode.yearlyDefault:
+        final targetMonth = mode == '여름철 온도'
+            ? 9
+            : mode == 'O3'
+                ? 9
+                : 12;
+        return e.month == targetMonth;
+    }
+  }
+
+  String _labelFor(_XAxisLabelMode xMode, TimeSeriesEntry e) {
+    switch (xMode) {
+      case _XAxisLabelMode.daily:
+        return e.period.length >= 10 ? e.period.substring(5) : e.period;
+      case _XAxisLabelMode.allYears:
+        return '${e.year}년';
+      case _XAxisLabelMode.allMonths:
+        return '${e.month}월';
+      case _XAxisLabelMode.yearlyDefault:
+        return '${e.year}년';
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    final periods = timeseriesData.map((e) => e.period).toList();
-
     final values = timeseriesData.map((e) => (e.value)).toList();
 
     final spots = List.generate(
@@ -35,8 +88,7 @@ class TimeSeries extends StatelessWidget {
     final minY = (dataMin - padding).floorToDouble();
     final maxY = (dataMax + padding).ceilToDouble();
 
-    final labelInterval =
-        periods.length <= 12 ? 1 : (periods.length / 8).ceil();
+    final xAxisLabelMode = _detectXAxisLabelMode();
 
     return SizedBox(
       height: 420,
@@ -79,9 +131,13 @@ class TimeSeries extends StatelessWidget {
                   fontWeight: FontWeight.w600,
                 ),
               ),
-              sideTitles: const SideTitles(
+              sideTitles: SideTitles(
                 showTitles: true,
                 reservedSize: 45,
+                getTitlesWidget: (value, meta) => Text(
+                  value.toStringAsFixed(_decimals),
+                  style: const TextStyle(fontSize: 10, color: Colors.black87),
+                ),
               ),
             ),
             bottomTitles: AxisTitles(
@@ -102,29 +158,22 @@ class TimeSeries extends StatelessWidget {
                 getTitlesWidget: (value, meta) {
                   final index = value.toInt();
 
-                  if (index < 0 || index >= periods.length) {
+                  if (index < 0 || index >= timeseriesData.length) {
                     return const SizedBox.shrink();
                   }
 
-                  final showLabel = index == 0 ||
-                      index == periods.length - 1 ||
-                      index % labelInterval == 0;
+                  final entry = timeseriesData[index];
 
-                  if (!showLabel) {
+                  if (!_shouldLabel(xAxisLabelMode, entry)) {
                     return const SizedBox.shrink();
                   }
-
-                  // 2019-08-01 -> 08-01 로 줄이기
-                  final label = periods[index].length >= 10
-                      ? periods[index].substring(5)
-                      : periods[index];
 
                   return SideTitleWidget(
                     axisSide: meta.axisSide,
                     space: 10,
                     angle: -0.65,
                     child: Text(
-                      label,
+                      _labelFor(xAxisLabelMode, entry),
                       style: const TextStyle(
                         fontSize: 11,
                         color: Colors.black87,
@@ -142,7 +191,7 @@ class TimeSeries extends StatelessWidget {
                 return spots.map((spot) {
                   final index = spot.x.toInt();
                   return LineTooltipItem(
-                    '${periods[index]}\n${spot.y.toStringAsFixed(2)}',
+                    '${timeseriesData[index].period}\n${spot.y.toStringAsFixed(_decimals)}',
                     const TextStyle(
                       color: Colors.white,
                       fontSize: 12,
@@ -162,9 +211,9 @@ class TimeSeries extends StatelessWidget {
                 show: true,
                 getDotPainter: (spot, percent, barData, index) {
                   return FlDotCirclePainter(
-                    radius: 4,
+                    radius: 2,
                     color: Colors.white,
-                    strokeWidth: 2,
+                    strokeWidth: 1,
                     strokeColor: const Color(0xff003c8f),
                   );
                 },

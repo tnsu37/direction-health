@@ -32,6 +32,8 @@ class ScenarioApTimeSeriesChart extends StatelessWidget {
         : Color.lerp(const Color(0xFFFFCC80), const Color(0xFFE65100), t)!;
   }
 
+  int get _decimals => mode == 'O3' ? 2 : 1;
+
   String _changeApLabel(int v) {
     if (v == 0) return '기준(0%)';
     final sign = v > 0 ? '+' : '';
@@ -133,8 +135,14 @@ class ScenarioApTimeSeriesChart extends StatelessWidget {
                   axisNameWidget: Text(unitLabel,
                       style: const TextStyle(
                           fontSize: 12, fontWeight: FontWeight.w600)),
-                  sideTitles:
-                      const SideTitles(showTitles: true, reservedSize: 52),
+                  sideTitles: SideTitles(
+                    showTitles: true,
+                    reservedSize: 52,
+                    getTitlesWidget: (value, meta) => Text(
+                      value.toStringAsFixed(_decimals),
+                      style: const TextStyle(fontSize: 10, color: Colors.black87),
+                    ),
+                  ),
                 ),
                 bottomTitles: AxisTitles(
                   axisNameWidget: const Padding(
@@ -167,7 +175,7 @@ class ScenarioApTimeSeriesChart extends StatelessWidget {
                   getTooltipItems: (spots) => spots.map((spot) {
                     final ca = changeAps[spot.barIndex];
                     return LineTooltipItem(
-                      '${_changeApLabel(ca)}\n${spot.y.toStringAsFixed(2)}',
+                      '${_changeApLabel(ca)}\n${spot.y.toStringAsFixed(_decimals)}',
                       const TextStyle(color: Colors.white, fontSize: 11),
                     );
                   }).toList(),

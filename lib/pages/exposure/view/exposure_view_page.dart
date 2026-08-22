@@ -34,7 +34,8 @@ class ExposureViewPage extends GetView<ExposureController> {
               width: Common.bigSize.value ? 770 : 600,
               height: 330,
               child: Obx(() => TimeSeries(
-                  timeseriesData: controller.result.value.timeseriesData)),
+                  timeseriesData: controller.result.value.timeseriesData,
+                  mode: controller.fetchedRequest['mode']?.toString() ?? '')),
             ),
             const SizedBox(height: 15),
             Obx(() {

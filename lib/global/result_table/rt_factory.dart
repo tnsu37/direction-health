@@ -25,14 +25,14 @@ class ResultTableFactory {
     final isAllMonth = monthStr == '전체';
 
     if (isAllYear && isAllMonth) {
-      return ResultTableSet.single(_pastCase11(data, unitLabel));
+      return ResultTableSet.single(_pastCase11(data, unitLabel, mode));
     } else if (!isAllYear && isAllMonth) {
-      return ResultTableSet.single(_pastCase12(data, yearStr, unitLabel));
+      return ResultTableSet.single(_pastCase12(data, yearStr, unitLabel, mode));
     } else if (isAllYear && !isAllMonth) {
-      return ResultTableSet.single(_pastCase13(data, monthStr, unitLabel));
+      return ResultTableSet.single(_pastCase13(data, monthStr, unitLabel, mode));
     } else {
       return ResultTableSet.single(
-          _pastCase14(data, yearStr, monthStr, unitLabel));
+          _pastCase14(data, yearStr, monthStr, unitLabel, mode));
     }
   }
 
@@ -123,7 +123,7 @@ class ResultTableFactory {
 
   // 전체 연도 / 전체 월 → rows=월, cols=연도
   static ResultTableModel _pastCase11(
-      ExposureApiResponse data, String unitLabel) {
+      ExposureApiResponse data, String unitLabel, String mode) {
     final Map<int, Map<int, double?>> monthly = {};
     for (final e in data.monthly) {
       final (y, m) = _parseYearMonth(e.period);
@@ -158,12 +158,12 @@ class ResultTableFactory {
       ...sortedMonths.map((m) {
         return <RtCell>[
           RtCell('$m월', bold: true),
-          ...sortedYears.map((y) => RtCell(_fmt(monthly[y]?[m]))),
+          ...sortedYears.map((y) => RtCell(_fmtByMode(monthly[y]?[m], mode))),
         ];
       }),
       <RtCell>[
         RtCell(unitLabel, bold: true),
-        ...sortedYears.map((y) => RtCell(_fmt(yearly[y]))),
+        ...sortedYears.map((y) => RtCell(_fmtByMode(yearly[y], mode))),
       ],
     ];
 
@@ -175,6 +175,7 @@ class ResultTableFactory {
     ExposureApiResponse data,
     String yearStr,
     String unitLabel,
+    String mode,
   ) {
     final selectedYear = int.tryParse(yearStr);
 
@@ -215,8 +216,8 @@ class ResultTableFactory {
 
     final row = <RtCell>[
       RtCell(unitLabel, bold: true),
-      ...selectedMonthly.map((e) => RtCell(_fmt(e.value))),
-      RtCell(_fmt(yearly?.value)),
+      ...selectedMonthly.map((e) => RtCell(_fmtByMode(e.value, mode))),
+      RtCell(_fmtByMode(yearly?.value, mode)),
     ];
 
     return ResultTableModel(headers: headers, rows: [row]);
@@ -227,6 +228,7 @@ class ResultTableFactory {
     ExposureApiResponse data,
     String monthStr,
     String unitLabel,
+    String mode,
   ) {
     final selectedMonth = int.tryParse(monthStr);
 
@@ -250,7 +252,7 @@ class ResultTableFactory {
 
     final row = <RtCell>[
       RtCell(unitLabel, bold: true),
-      ...selectedMonthly.map((e) => RtCell(_fmt(e.value))),
+      ...selectedMonthly.map((e) => RtCell(_fmtByMode(e.value, mode))),
     ];
 
     return ResultTableModel(headers: headers, rows: [row]);
@@ -262,6 +264,7 @@ class ResultTableFactory {
     String yearStr,
     String monthStr,
     String unitLabel,
+    String mode,
   ) {
     final selectedYear = int.tryParse(yearStr);
     final selectedMonth = int.tryParse(monthStr);
@@ -281,7 +284,7 @@ class ResultTableFactory {
 
     final row = <RtCell>[
       RtCell(unitLabel, bold: true),
-      RtCell(_fmt(value)),
+      RtCell(_fmtByMode(value, mode)),
     ];
 
     return ResultTableModel(headers: headers, rows: [row]);
@@ -375,9 +378,10 @@ class ResultTableFactory {
     final baseVal = baseline['proj_val'];
 
     if (isDefault) {
-      return _scenarioAPDefault(data, unitLabel, baseVal);
+      return _scenarioAPDefault(data, unitLabel, baseVal, mode);
     } else {
-      return _scenarioAPSelected(data, request, unitLabel, baseVal, changeAp);
+      return _scenarioAPSelected(
+          data, request, unitLabel, baseVal, changeAp, mode);
     }
   }
 
@@ -385,6 +389,7 @@ class ResultTableFactory {
     FutureExposureResponse data,
     String unitLabel,
     dynamic baseVal,
+    String mode,
   ) {
     // Table 1: Baseline value
     final table1 = ResultTableModel(
@@ -395,7 +400,7 @@ class ResultTableFactory {
       rows: [
         [
           const RtCell('기준 기간(2015-2019)', bold: true),
-          RtCell(_fmt(baseVal is num ? baseVal.toDouble() : null)),
+          RtCell(_fmtByMode(baseVal is num ? baseVal.toDouble() : null, mode)),
         ]
       ],
     );
@@ -436,8 +441,8 @@ class ResultTableFactory {
       rows: sortedAbs.map((abs) {
         return <RtCell>[
           RtCell('$abs%', bold: true),
-          RtCell(_fmt(changePivot[abs]?['pos'])),
-          RtCell(_fmt(changePivot[abs]?['neg'])),
+          RtCell(_fmtByMode(changePivot[abs]?['pos'], mode)),
+          RtCell(_fmtByMode(changePivot[abs]?['neg'], mode)),
         ];
       }).toList(),
     );
@@ -451,6 +456,7 @@ class ResultTableFactory {
     String unitLabel,
     dynamic baseVal,
     int changeAp,
+    String mode,
   ) {
     final selected = data.selectedScenario.firstWhere(
       (e) => !(e['period']?.toString().contains('Baseline') == true),
@@ -467,10 +473,12 @@ class ResultTableFactory {
       rows: [
         [
           const RtCell('기준 기간(2015-2019)', bold: true),
-          RtCell(_fmt(baseVal is num ? baseVal.toDouble() : null)),
-          RtCell(_fmt(selected['proj_val'] is num
-              ? (selected['proj_val'] as num).toDouble()
-              : null)),
+          RtCell(_fmtByMode(baseVal is num ? baseVal.toDouble() : null, mode)),
+          RtCell(_fmtByMode(
+              selected['proj_val'] is num
+                  ? (selected['proj_val'] as num).toDouble()
+                  : null,
+              mode)),
         ]
       ],
     );
@@ -558,6 +566,10 @@ class ResultTableFactory {
   // ─── Helpers ─────────────────────────────────────────────────────────────
 
   static String _fmt(double? v) => v == null ? '-' : v.toStringAsFixed(1);
+
+  // 오존(O3)은 소수점 두자리, 그 외 물질은 소수점 한자리로 통일
+  static String _fmtByMode(double? v, String mode) =>
+      v == null ? '-' : v.toStringAsFixed(mode == 'O3' ? 2 : 1);
 
   static String _fmtLarge(double? v) => v == null ? '-' : _largeFmt.format(v);
 

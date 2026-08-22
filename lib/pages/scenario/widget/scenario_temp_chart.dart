@@ -273,7 +273,7 @@ class ScenarioTempChart extends StatelessWidget {
                     final gcm = barGcmNames[spot.barIndex];
                     final display = gcm == 'Ensemble' ? '앙상블' : gcm;
                     return LineTooltipItem(
-                      '$display\n$year: ${spot.y.toStringAsFixed(2)}℃',
+                      '$display\n$year: ${spot.y.toStringAsFixed(1)}℃',
                       const TextStyle(color: Colors.white, fontSize: 11),
                     );
                   }).toList(),

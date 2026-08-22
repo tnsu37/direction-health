@@ -55,8 +55,8 @@ class GlobalFilterBar extends StatelessWidget {
           ], controller: controller),
         ]);
 
-      /// 과거노출 > 여름철 온도 & 오존
-      case FilterConfig.exposureSummer:
+      /// 과거노출 > 여름철 온도
+      case FilterConfig.exposureSummerTemp:
         return _FilterCard(rows: [
           _FilterRow(items: [
             _StyledDropdown(
@@ -64,6 +64,44 @@ class GlobalFilterBar extends StatelessWidget {
               label: '연도',
               value: controller.filterYear.value,
               options: Common.years,
+              onChanged: (v) => controller.filterYear.value = v!,
+            )),
+            _StyledDropdown(
+                item: _DropdownItem(
+              label: '월',
+              value: controller.filterMonth.value,
+              options: Common.summer,
+              onChanged: (v) => controller.filterMonth.value = v!,
+            )),
+            _StyledDropdown(
+                item: _DropdownItem(
+              label: '시도',
+              value: controller.filterSido.value,
+              options: Common.sido1,
+              onChanged: (v) {
+                controller.filterSido.value = v!;
+                controller.filterSigungu.value = '전체';
+              },
+            )),
+            _StyledDropdown(
+                item: _DropdownItem(
+              label: '시군구',
+              value: controller.filterSigungu.value,
+              options: controller.sgg,
+              onChanged: (v) => controller.filterSigungu.value = v!,
+            )),
+          ], controller: controller),
+        ]);
+
+      /// 과거노출 > 여름철 오존
+      case FilterConfig.exposureSummerO3:
+        return _FilterCard(rows: [
+          _FilterRow(items: [
+            _StyledDropdown(
+                item: _DropdownItem(
+              label: '연도',
+              value: controller.filterYear.value,
+              options: Common.years2,
               onChanged: (v) => controller.filterYear.value = v!,
             )),
             _StyledDropdown(
@@ -101,7 +139,7 @@ class GlobalFilterBar extends StatelessWidget {
                 item: _DropdownItem(
               label: '연도',
               value: controller.filterYear.value,
-              options: Common.years,
+              options: Common.years2,
               onChanged: (v) => controller.filterYear.value = v!,
             )),
             _StyledDropdown(

@@ -233,6 +233,15 @@ class Common {
     '2019년',
   ];
 
+  static const List<String> years2 = [
+    '전체',
+    '2015년',
+    '2016년',
+    '2017년',
+    '2018년',
+    '2019년',
+  ];
+
   static const List<String> months = [
     '전체',
     '1월',
