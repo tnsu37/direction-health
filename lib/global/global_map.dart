@@ -365,7 +365,7 @@ class _KoreaMapWidgetState extends State<GlobalMap> {
         FlutterMap(
           mapController: _mapController,
           options: MapOptions(
-            initialCenter: const LatLng(36.5, 127.8),
+            initialCenter: const LatLng(35.9, 127.8),
             initialZoom: 6.8,
             minZoom: 5.5,
             maxZoom: 12.0,

@@ -295,7 +295,6 @@ class ResultTableFactory {
     required String mode,
   }) {
     if (data.periodSummary.isEmpty) return ResultTableSet([]);
-    final selectedGcms = _parseSelectedGcms(request['gcm_'] ?? request['gcm']);
 
     // Pivot: period → gcm → {mean, sd}
     final Map<String, Map<String, Map<String, double?>>> pivot = {};
@@ -338,16 +337,14 @@ class ResultTableFactory {
 
     final rows = sortedGcms.map((gcm) {
       final isEnsemble = gcm == 'Ensemble';
-      final isSelected = selectedGcms.contains(gcm);
-      final color = isSelected ? const Color(0xFF1565C0) : null;
       final displayName = isEnsemble ? '앙상블' : gcm;
       return <RtCell>[
-        RtCell(displayName, bold: isEnsemble, textColor: color),
+        RtCell(displayName, bold: isEnsemble),
         ...sortedPeriods.expand((p) {
           final d = pivot[gcm]?[p];
           return [
-            RtCell(_fmt(d?['mean']), bold: isEnsemble, textColor: color),
-            RtCell(_fmt(d?['sd']), bold: isEnsemble, textColor: color),
+            RtCell(_fmt(d?['mean']), bold: isEnsemble),
+            RtCell(_fmt(d?['sd']), bold: isEnsemble),
           ];
         }),
       ];

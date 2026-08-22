@@ -47,7 +47,9 @@ class ScenarioTempChart extends StatelessWidget {
 
     // Sorted unique years → x index
     final years = trend.map((p) => p.year).toSet().toList()..sort();
-    final yearToX = {for (int i = 0; i < years.length; i++) years[i]: i.toDouble()};
+    final yearToX = {
+      for (int i = 0; i < years.length; i++) years[i]: i.toDouble()
+    };
 
     // Y range
     final allVals = trend.map((p) => p.meanVal).toList();
@@ -60,45 +62,130 @@ class ScenarioTempChart extends StatelessWidget {
     final gcmList = byGcm.keys.toList();
 
     // Line bars
-    final bars = gcmList.asMap().entries.map((entry) {
+// 2060~2080 구간은 그래프를 표시하지 않기 위해
+// 2059년 이전 / 2081년 이후를 서로 다른 bar로 분리
+    final List<LineChartBarData> bars = [];
+    final List<String> barGcmNames = [];
+
+    for (final entry in gcmList.asMap().entries) {
       final gcm = entry.value;
       final isEnsemble = gcm == 'Ensemble';
-      final color = _gcmColors[gcm] ?? _fallbackColors[entry.key % _fallbackColors.length];
-      final points = (byGcm[gcm]!.toList())..sort((a, b) => a.year.compareTo(b.year));
-      final spots = points.map((p) => FlSpot(yearToX[p.year]!, p.meanVal)).toList();
-      return LineChartBarData(
-        spots: spots,
-        isCurved: false,
-        color: color,
-        barWidth: isEnsemble ? 2.5 : 1.5,
-        dotData: const FlDotData(show: false),
-        belowBarData: BarAreaData(show: false),
-      );
-    }).toList();
 
-    // Vertical period lines
-    VerticalLine _periodLine(int year, String label) {
-      final x = yearToX[year];
+      final color = _gcmColors[gcm] ??
+          _fallbackColors[entry.key % _fallbackColors.length];
+
+      final points = byGcm[gcm]!.toList()
+        ..sort((a, b) => a.year.compareTo(b.year));
+
+      // 2060~2080 제외
+      final beforeGap = points
+          .where((p) => p.year < 2061)
+          .map((p) => FlSpot(yearToX[p.year]!, p.meanVal))
+          .toList();
+
+      final afterGap = points
+          .where((p) => p.year > 2080)
+          .map((p) => FlSpot(yearToX[p.year]!, p.meanVal))
+          .toList();
+
+      LineChartBarData makeBar(List<FlSpot> spots) {
+        return LineChartBarData(
+          spots: spots,
+          isCurved: false,
+          color: color,
+          barWidth: isEnsemble ? 2.5 : 1.5,
+          dotData: const FlDotData(show: false),
+          belowBarData: BarAreaData(show: false),
+        );
+      }
+
+      if (beforeGap.isNotEmpty) {
+        bars.add(makeBar(beforeGap));
+        barGcmNames.add(gcm);
+      }
+
+      if (afterGap.isNotEmpty) {
+        bars.add(makeBar(afterGap));
+        barGcmNames.add(gcm);
+      }
+    }
+
+    // 연도(정수) → x좌표. 데이터에 정확히 없는 연도는 인접한 두 연도 사이를 보간.
+    double? _xForYear(int year) {
+      if (yearToX.containsKey(year)) return yearToX[year];
+      int? lower, upper;
+      for (final y in years) {
+        if (y <= year) lower = y;
+        if (y >= year && upper == null) upper = y;
+      }
+      if (lower == null && upper == null) return null;
+      if (lower == null) return yearToX[upper!];
+      if (upper == null) return yearToX[lower];
+      if (lower == upper) return yearToX[lower];
+      final lx = yearToX[lower]!, ux = yearToX[upper]!;
+      final t = (year - lower) / (upper - lower);
+      return lx + (ux - lx) * t;
+    }
+
+    double? _xMid(int startYear, int endYear) {
+      final x1 = _xForYear(startYear);
+      final x2 = _xForYear(endYear);
+      if (x1 == null || x2 == null) return null;
+      return (x1 + x2) / 2;
+    }
+
+    // 기간 구분선 (라벨 없음)
+    VerticalLine _periodDivider(int year) {
+      final x = _xForYear(year);
       return VerticalLine(
         x: x ?? 0,
         color: Colors.grey.withOpacity(0.55),
         strokeWidth: 1,
         dashArray: [5, 4],
+      );
+    }
+
+    // 기간 라벨 (해당 기간의 중간 지점에 표시, 선은 그리지 않음)
+    VerticalLine _periodMidLabel(double? x, String label) {
+      return VerticalLine(
+        x: x ?? 0,
+        color: Colors.transparent,
+        strokeWidth: 0,
         label: VerticalLineLabel(
           show: x != null,
           labelResolver: (_) => label,
-          alignment: Alignment.topLeft,
-          style: const TextStyle(fontSize: 10, color: Colors.black54, fontWeight: FontWeight.w600),
-          padding: const EdgeInsets.only(left: 4, bottom: 4),
+          alignment: Alignment.topCenter,
+          style: const TextStyle(
+              fontSize: 10, color: Colors.black54, fontWeight: FontWeight.w600),
+          padding: const EdgeInsets.only(bottom: 4),
         ),
       );
     }
 
     final verticalLines = [
-      _periodLine(2031, '근미래'),
-      _periodLine(2041, '중미래'),
-      _periodLine(2081, '먼미래'),
+      _periodDivider(2031),
+      _periodDivider(2041),
+      _periodDivider(2081),
+      _periodMidLabel(_xMid(2031, 2040), '근미래'),
+      _periodMidLabel(_xMid(2041, 2060), '중미래'),
+      _periodMidLabel(_xMid(2081, 2100), '먼미래'),
     ];
+
+    // 2060~2080년(모델링 공백 구간) 회색 처리
+    final gapX1 = _xForYear(2060);
+    final gapX2 = _xForYear(2080);
+
+    final rangeAnnotations = (gapX1 != null && gapX2 != null)
+        ? RangeAnnotations(
+            verticalRangeAnnotations: [
+              VerticalRangeAnnotation(
+                x1: gapX1,
+                x2: gapX2 + 1,
+                color: Colors.grey.withOpacity(0.25),
+              ),
+            ],
+          )
+        : null;
 
     final unitLabel = mode == '여름철 온도' ? '평균 온도(℃)' : '연평균 온도(℃)';
 
@@ -109,7 +196,10 @@ class ScenarioTempChart extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.only(bottom: 8),
             child: Text(chartTitle,
-                style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Color(0xFF333333))),
+                style: const TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    color: Color(0xFF333333))),
           ),
         SizedBox(
           height: 380,
@@ -120,12 +210,13 @@ class ScenarioTempChart extends StatelessWidget {
               minY: yMin,
               maxY: yMax,
               extraLinesData: ExtraLinesData(verticalLines: verticalLines),
+              rangeAnnotations: rangeAnnotations ?? const RangeAnnotations(),
               clipData: const FlClipData.all(),
               gridData: FlGridData(
                 show: true,
                 drawVerticalLine: false,
-                getDrawingHorizontalLine: (v) =>
-                    FlLine(color: Colors.grey.withOpacity(0.15), strokeWidth: 1),
+                getDrawingHorizontalLine: (v) => FlLine(
+                    color: Colors.grey.withOpacity(0.15), strokeWidth: 1),
               ),
               borderData: FlBorderData(
                 show: true,
@@ -135,17 +226,23 @@ class ScenarioTempChart extends StatelessWidget {
                 ),
               ),
               titlesData: FlTitlesData(
-                topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                topTitles:
+                    const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                rightTitles:
+                    const AxisTitles(sideTitles: SideTitles(showTitles: false)),
                 leftTitles: AxisTitles(
                   axisNameWidget: Text(unitLabel,
-                      style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
-                  sideTitles: const SideTitles(showTitles: true, reservedSize: 45),
+                      style: const TextStyle(
+                          fontSize: 12, fontWeight: FontWeight.w600)),
+                  sideTitles:
+                      const SideTitles(showTitles: true, reservedSize: 45),
                 ),
                 bottomTitles: AxisTitles(
                   axisNameWidget: const Padding(
                     padding: EdgeInsets.only(top: 8),
-                    child: Text('연도', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
+                    child: Text('연도',
+                        style: TextStyle(
+                            fontSize: 12, fontWeight: FontWeight.w600)),
                   ),
                   axisNameSize: 32,
                   sideTitles: SideTitles(
@@ -153,13 +250,15 @@ class ScenarioTempChart extends StatelessWidget {
                     interval: 1,
                     getTitlesWidget: (value, meta) {
                       final idx = value.toInt();
-                      if (idx < 0 || idx >= years.length) return const SizedBox.shrink();
+                      if (idx < 0 || idx >= years.length)
+                        return const SizedBox.shrink();
                       final year = years[idx];
                       if (year % 10 != 0) return const SizedBox.shrink();
                       return SideTitleWidget(
                         axisSide: meta.axisSide,
                         space: 6,
-                        child: Text('$year', style: const TextStyle(fontSize: 10)),
+                        child:
+                            Text('$year', style: const TextStyle(fontSize: 10)),
                       );
                     },
                   ),
@@ -171,7 +270,7 @@ class ScenarioTempChart extends StatelessWidget {
                   getTooltipItems: (spots) => spots.map((spot) {
                     final idx = spot.x.toInt();
                     final year = idx < years.length ? years[idx] : 0;
-                    final gcm = gcmList[spot.barIndex];
+                    final gcm = barGcmNames[spot.barIndex];
                     final display = gcm == 'Ensemble' ? '앙상블' : gcm;
                     return LineTooltipItem(
                       '$display\n$year: ${spot.y.toStringAsFixed(2)}℃',
@@ -192,7 +291,8 @@ class ScenarioTempChart extends StatelessWidget {
           children: gcmList.asMap().entries.map((entry) {
             final gcm = entry.value;
             final isEnsemble = gcm == 'Ensemble';
-            final color = _gcmColors[gcm] ?? _fallbackColors[entry.key % _fallbackColors.length];
+            final color = _gcmColors[gcm] ??
+                _fallbackColors[entry.key % _fallbackColors.length];
             final displayName = isEnsemble ? '앙상블' : gcm;
             return Row(
               mainAxisSize: MainAxisSize.min,
@@ -200,7 +300,10 @@ class ScenarioTempChart extends StatelessWidget {
                 Container(width: 22, height: isEnsemble ? 3 : 2, color: color),
                 const SizedBox(width: 5),
                 Text(displayName,
-                    style: TextStyle(fontSize: 11, fontWeight: isEnsemble ? FontWeight.w700 : FontWeight.normal)),
+                    style: TextStyle(
+                        fontSize: 11,
+                        fontWeight:
+                            isEnsemble ? FontWeight.w700 : FontWeight.normal)),
               ],
             );
           }).toList(),

@@ -17,7 +17,11 @@ class ScenarioApTimeSeriesChart extends StatelessWidget {
   final String mode;
   final String chartTitle;
 
-  static const List<String> _periodKeys = ['2031-2040', '2041-2060', '2081-2100'];
+  static const List<String> _periodKeys = [
+    '2031-2040',
+    '2041-2060',
+    '2081-2100'
+  ];
   static const List<String> _periodLabels = ['근미래', '중미래', '먼미래'];
 
   Color _colorFor(int changeAp) {
@@ -44,7 +48,8 @@ class ScenarioApTimeSeriesChart extends StatelessWidget {
       if (idx == -1) continue; // baseline 등 제외
       final ca = (e['change_ap'] as num?)?.toInt() ?? 0;
       final v = (e['proj_val'] as num?)?.toDouble();
-      final list = byChangeAp.putIfAbsent(ca, () => List<double?>.filled(3, null));
+      final list =
+          byChangeAp.putIfAbsent(ca, () => List<double?>.filled(3, null));
       list[idx] = v;
     }
 
@@ -52,7 +57,8 @@ class ScenarioApTimeSeriesChart extends StatelessWidget {
 
     final changeAps = byChangeAp.keys.toList()..sort();
 
-    final allVals = byChangeAp.values.expand((l) => l).whereType<double>().toList();
+    final allVals =
+        byChangeAp.values.expand((l) => l).whereType<double>().toList();
     if (allVals.isEmpty) return const SizedBox.shrink();
     final minVal = allVals.reduce((a, b) => a < b ? a : b);
     final maxVal = allVals.reduce((a, b) => a > b ? a : b);
@@ -75,8 +81,8 @@ class ScenarioApTimeSeriesChart extends StatelessWidget {
         barWidth: isBaseline ? 2.5 : 1.3,
         dotData: FlDotData(
           show: true,
-          getDotPainter: (spot, percent, bar, index) =>
-              FlDotCirclePainter(radius: isBaseline ? 3 : 2, color: color, strokeWidth: 0),
+          getDotPainter: (spot, percent, bar, index) => FlDotCirclePainter(
+              radius: isBaseline ? 3 : 2, color: color, strokeWidth: 0),
         ),
         belowBarData: BarAreaData(show: false),
       );
@@ -92,7 +98,9 @@ class ScenarioApTimeSeriesChart extends StatelessWidget {
             padding: const EdgeInsets.only(bottom: 8),
             child: Text(chartTitle,
                 style: const TextStyle(
-                    fontSize: 13, fontWeight: FontWeight.w600, color: Color(0xFF333333))),
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    color: Color(0xFF333333))),
           ),
         SizedBox(
           height: 380,
@@ -106,8 +114,8 @@ class ScenarioApTimeSeriesChart extends StatelessWidget {
               gridData: FlGridData(
                 show: true,
                 drawVerticalLine: false,
-                getDrawingHorizontalLine: (v) =>
-                    FlLine(color: Colors.grey.withOpacity(0.15), strokeWidth: 1),
+                getDrawingHorizontalLine: (v) => FlLine(
+                    color: Colors.grey.withOpacity(0.15), strokeWidth: 1),
               ),
               borderData: FlBorderData(
                 show: true,
@@ -117,17 +125,23 @@ class ScenarioApTimeSeriesChart extends StatelessWidget {
                 ),
               ),
               titlesData: FlTitlesData(
-                topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                topTitles:
+                    const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                rightTitles:
+                    const AxisTitles(sideTitles: SideTitles(showTitles: false)),
                 leftTitles: AxisTitles(
                   axisNameWidget: Text(unitLabel,
-                      style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
-                  sideTitles: const SideTitles(showTitles: true, reservedSize: 52),
+                      style: const TextStyle(
+                          fontSize: 12, fontWeight: FontWeight.w600)),
+                  sideTitles:
+                      const SideTitles(showTitles: true, reservedSize: 52),
                 ),
                 bottomTitles: AxisTitles(
                   axisNameWidget: const Padding(
                     padding: EdgeInsets.only(top: 8),
-                    child: Text('시점', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
+                    child: Text('시점',
+                        style: TextStyle(
+                            fontSize: 12, fontWeight: FontWeight.w600)),
                   ),
                   axisNameSize: 32,
                   sideTitles: SideTitles(
@@ -135,11 +149,13 @@ class ScenarioApTimeSeriesChart extends StatelessWidget {
                     interval: 1,
                     getTitlesWidget: (value, meta) {
                       final idx = value.toInt();
-                      if (idx < 0 || idx >= _periodLabels.length) return const SizedBox.shrink();
+                      if (idx < 0 || idx >= _periodLabels.length)
+                        return const SizedBox.shrink();
                       return SideTitleWidget(
                         axisSide: meta.axisSide,
                         space: 6,
-                        child: Text(_periodLabels[idx], style: const TextStyle(fontSize: 10)),
+                        child: Text(_periodLabels[idx],
+                            style: const TextStyle(fontSize: 10)),
                       );
                     },
                   ),
@@ -170,12 +186,16 @@ class ScenarioApTimeSeriesChart extends StatelessWidget {
             return Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Container(width: 16, height: isBaseline ? 3 : 2, color: _colorFor(ca)),
+                Container(
+                    width: 16,
+                    height: isBaseline ? 3 : 2,
+                    color: _colorFor(ca)),
                 const SizedBox(width: 4),
                 Text(_changeApLabel(ca),
                     style: TextStyle(
                         fontSize: 10,
-                        fontWeight: isBaseline ? FontWeight.w700 : FontWeight.normal)),
+                        fontWeight:
+                            isBaseline ? FontWeight.w700 : FontWeight.normal)),
               ],
             );
           }).toList(),
