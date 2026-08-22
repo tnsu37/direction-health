@@ -365,7 +365,7 @@ class _KoreaMapWidgetState extends State<GlobalMap> {
             Padding(
               padding: const EdgeInsets.only(bottom: 12),
               child: Text(widget.title,
-                  style: CommonStyle.textStyleFontBlack18500),
+                  style: CommonStyle.textStyleFontBlack18600),
             ),
           SizedBox(
             height: 590,
@@ -522,23 +522,8 @@ class _InfoChip extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text(
-            feature.sggName,
-            style: const TextStyle(
-              fontSize: 11,
-              fontWeight: FontWeight.w700,
-              color: Color(0xFF333333),
-              //fontFamily: 'Gothic',
-            ),
-          ),
-          Text(
-            valStr,
-            style: TextStyle(
-              fontSize: 11,
-              // color: DirectionColors.primary,
-              //fontFamily: 'Gothic',
-            ),
-          ),
+          Text(feature.sggName, style: CommonStyle.textStyle11600),
+          Text(valStr, style: const TextStyle(fontSize: 11)),
         ],
       ),
     );
@@ -572,7 +557,7 @@ class _LegendBar extends StatelessWidget {
           if (label.isNotEmpty)
             Text(
               '$label${unit.isEmpty ? '' : ' ($unit)'}',
-              style: const TextStyle(fontSize: 9, color: Color(0xFF666666)),
+              style: CommonStyle.textStyle11600,
               textAlign: TextAlign.center,
             ),
           // max 값
@@ -612,10 +597,7 @@ class _LegendBar extends StatelessWidget {
                     child: Text(
                       scale.center!.toStringAsFixed(1),
                       style: const TextStyle(
-                        fontSize: 9,
-                        color: Color(0xFF444444),
-                        fontFamily: 'Gothic',
-                      ),
+                          fontSize: 9, color: Color(0xFF444444)),
                     ),
                   ),
               ],

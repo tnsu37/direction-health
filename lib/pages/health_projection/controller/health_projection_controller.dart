@@ -9,7 +9,7 @@ class HealthProjectionController extends GetxController {
       Get.find<HealthProjectionController>();
 
   final _api = ApiService();
-  final Rx<FutureProjectionResponse?> result = Rx(null);
+  late Rx<FutureProjectionResponse> result;
   RxString error = ''.obs;
   Map<String, dynamic> fetchedRequest = {};
 
@@ -41,7 +41,7 @@ class HealthProjectionController extends GetxController {
         'change_ap_': isAP ? mc.filterConcChange.value : null,
         'policy_': ApiMap.policy(mc.filterAdaptation.value),
       };
-      result.value = res.data;
+      result.value = res.data!;
       if (res.isEmpty) error.value = res.message ?? '데이터가 없습니다.';
     } on ApiException catch (e) {
       error.value = e.message;
@@ -49,5 +49,17 @@ class HealthProjectionController extends GetxController {
       mc.animationController.stop();
       Common.isLoading.value = false;
     }
+  }
+
+  @override
+  void onInit() {
+    super.onInit();
+    result = FutureProjectionResponse.empty.obs;
+  }
+
+  @override
+  void onReady() {
+    super.onReady();
+    fetch();
   }
 }

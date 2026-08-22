@@ -26,6 +26,8 @@ class CommonStyle {
       const TextStyle(fontSize: 18, fontWeight: FontWeight.w400);
   static TextStyle textStyle16500 =
       const TextStyle(fontSize: 16, fontWeight: FontWeight.w500);
+  static TextStyle textStyle11600 =
+      const TextStyle(fontSize: 11, fontWeight: FontWeight.w600);
 
   ///---------------------------font7D7D7D------------------------------
   static TextStyle textStyle7D24700 = TextStyle(
@@ -96,8 +98,8 @@ class CommonStyle {
       fontSize: 20, fontWeight: FontWeight.w400, color: CommonColor.fontBlack);
   static TextStyle textStyleFontBlack18400 = TextStyle(
       fontSize: 18, fontWeight: FontWeight.w400, color: CommonColor.fontBlack);
-  static TextStyle textStyleFontBlack18500 = TextStyle(
-      fontSize: 18, fontWeight: FontWeight.w500, color: CommonColor.fontBlack);
+  static TextStyle textStyleFontBlack18600 = TextStyle(
+      fontSize: 18, fontWeight: FontWeight.w600, color: CommonColor.fontBlack);
   static TextStyle textStyleFontBlack14500 = TextStyle(
       fontSize: 14, fontWeight: FontWeight.w500, color: CommonColor.fontBlack);
   static TextStyle textStyleFontBlack16400 = TextStyle(

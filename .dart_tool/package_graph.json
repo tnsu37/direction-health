@@ -661,6 +661,17 @@
       ]
     },
     {
+      "name": "leak_tracker",
+      "version": "11.0.2",
+      "dependencies": [
+        "clock",
+        "collection",
+        "meta",
+        "path",
+        "vm_service"
+      ]
+    },
+    {
       "name": "term_glyph",
       "version": "1.2.1",
       "dependencies": []
@@ -715,6 +726,11 @@
       ]
     },
     {
+      "name": "vm_service",
+      "version": "14.2.4",
+      "dependencies": []
+    },
+    {
       "name": "unicode",
       "version": "0.3.1",
       "dependencies": [
@@ -727,22 +743,6 @@
       "dependencies": [
         "meta"
       ]
-    },
-    {
-      "name": "leak_tracker",
-      "version": "11.0.2",
-      "dependencies": [
-        "clock",
-        "collection",
-        "meta",
-        "path",
-        "vm_service"
-      ]
-    },
-    {
-      "name": "vm_service",
-      "version": "14.2.4",
-      "dependencies": []
     }
   ],
   "configVersion": 1

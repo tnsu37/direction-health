@@ -29,7 +29,7 @@ void main() async {
           );
         },
         theme: ThemeData(
-          fontFamily: 'Inter',
+          fontFamily: 'Pretendard',
           canvasColor: Colors.transparent,
           bottomSheetTheme: const BottomSheetThemeData(
             backgroundColor: Colors.transparent,

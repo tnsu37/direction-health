@@ -425,6 +425,12 @@ class FutureExposureResponse {
       selectedScenario: _rawList(data['selected_scenario']),
     );
   }
+
+  static FutureExposureResponse get empty => const FutureExposureResponse(
+      yearlyTrend: [],
+      periodSummary: [],
+      fullSummary: [],
+      selectedScenario: []);
 }
 
 // ════════════════════════════════════════════════════════════════════
@@ -467,6 +473,9 @@ class FutureProjectionResponse {
       summaryData: _list(data['summary_data'], SummaryPoint.fromJson),
     );
   }
+
+  static FutureProjectionResponse get empty =>
+      const FutureProjectionResponse(summaryData: []);
 }
 
 // ── helpers ──

@@ -8,7 +8,7 @@ class ScenarioController extends GetxController {
   static ScenarioController get to => Get.find<ScenarioController>();
 
   final _api = ApiService();
-  final Rx<FutureExposureResponse?> result = Rx(null);
+  late Rx<FutureExposureResponse> result;
   RxString error = ''.obs;
   Map<String, dynamic> fetchedRequest = {};
 
@@ -36,7 +36,7 @@ class ScenarioController extends GetxController {
         'gcm': isTemp ? ApiMap.gcm(mc.filterClimateModels) : null,
         'change_ap': !isTemp ? mc.filterConcChange.value : null,
       };
-      result.value = res.data;
+      result.value = res.data!;
       if (res.isEmpty) error.value = res.message ?? '데이터가 없습니다.';
     } on ApiException catch (e) {
       error.value = e.message;
@@ -44,5 +44,17 @@ class ScenarioController extends GetxController {
       mc.animationController.stop();
       Common.isLoading.value = false;
     }
+  }
+
+  @override
+  void onInit() {
+    super.onInit();
+    result = FutureExposureResponse.empty.obs;
+  }
+
+  @override
+  void onReady() {
+    super.onReady();
+    fetch();
   }
 }
