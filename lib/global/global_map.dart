@@ -28,9 +28,18 @@ class _GeoCache {
 // ──────────────────────────────────────────────────────────────────
 
 class _ColorScale {
-  const _ColorScale({required this.min, required this.max});
+  const _ColorScale({
+    required this.min,
+    required this.max,
+    this.center,
+  });
+
   final double min;
   final double max;
+
+  // null이면 기존처럼 min~max의 가운데가 흰색
+  // 0이면 0을 흰색 기준으로 사용
+  final double? center;
 
   static const Color _cold = Color(0xFF3B4CC0);
   static const Color _mid = Color(0xFFF7F7F7);
@@ -40,16 +49,36 @@ class _ColorScale {
   Color colorFor(double? value) {
     if (value == null) return _noData;
     if (max == min) return _mid;
-    final t = ((value - min) / (max - min)).clamp(0.0, 1.0);
-    if (t < 0.5) {
-      return Color.lerp(_cold, _mid, t * 2)!;
-    } else {
-      return Color.lerp(_mid, _hot, (t - 0.5) * 2)!;
+
+    // center가 없으면 기존 방식
+    final mid = center ?? ((min + max) / 2);
+
+    // center가 범위 밖에 있으면 기존 방식으로 fallback
+    if (mid <= min || mid >= max) {
+      final t = ((value - min) / (max - min)).clamp(0.0, 1.0);
+
+      if (t < 0.5) {
+        return Color.lerp(_cold, _mid, t * 2)!;
+      } else {
+        return Color.lerp(_mid, _hot, (t - 0.5) * 2)!;
+      }
     }
+
+    // min → center : 파랑 → 흰색
+    if (value <= mid) {
+      final t = ((value - min) / (mid - min)).clamp(0.0, 1.0);
+      return Color.lerp(_cold, _mid, t)!;
+    }
+
+    // center → max : 흰색 → 빨강
+    final t = ((value - mid) / (max - mid)).clamp(0.0, 1.0);
+    return Color.lerp(_mid, _hot, t)!;
   }
 
-  /// 범례 색상 (0=cold, 1=hot)
-  Color legendColor(double t) => colorFor(min + t * (max - min));
+  Color legendColor(double t) {
+    final value = min + t * (max - min);
+    return colorFor(value);
+  }
 }
 
 // ──────────────────────────────────────────────────────────────────
@@ -87,10 +116,14 @@ class GlobalMap extends StatefulWidget {
     this.sido,
     this.highlightSggName,
     this.onDistrictTapped,
+    this.centerAtZero = false,
   });
 
   /// API에서 받아온 지도 데이터 ({sgg_229, col})
   final List<MapDataEntry> mapData;
+
+  /// true면 색상 범례의 중간(흰색)을 항상 값 0에 고정 (증가/감소를 대칭적으로 표시)
+  final bool centerAtZero;
 
   /// 범례 라벨 (e.g. "여름철 온도")
   final String label;
@@ -193,7 +226,11 @@ class _KoreaMapWidgetState extends State<GlobalMap> {
         minVal = 0;
         maxVal = 1;
       }
-      _scale = _ColorScale(min: minVal, max: maxVal);
+      _scale = _ColorScale(
+        min: minVal,
+        max: maxVal,
+        center: widget.centerAtZero ? 0.0 : null,
+      );
 
       // 피처 변환
       final features = <_PolygonFeature>[];
@@ -538,44 +575,67 @@ class _LegendBar extends StatelessWidget {
               style: const TextStyle(fontSize: 9, color: Color(0xFF666666)),
               textAlign: TextAlign.center,
             ),
-          const SizedBox(height: 6),
           // max 값
-          Text(
-            maxLabel,
-            style: const TextStyle(
-              fontSize: 9,
-              color: Color(0xFF444444),
-              fontFamily: 'Gothic',
-            ),
+          Padding(
+            padding: const EdgeInsets.only(top: 6, left: 10),
+            child: Text(maxLabel, style: const TextStyle(fontSize: 9)),
           ),
-          const SizedBox(height: 2),
           // 그라디언트 바
           SizedBox(
-            width: 16,
+            width: 45,
             height: 140,
-            child: CustomPaint(painter: _GradientBarPainter(scale: scale)),
-          ),
-          const SizedBox(height: 2),
-          Text(
-            minLabel,
-            style: const TextStyle(
-              fontSize: 9,
-              color: Color(0xFF444444),
-              fontFamily: 'Gothic',
+            child: Stack(
+              children: [
+                Positioned(
+                  top: 0,
+                  bottom: 0,
+                  child: SizedBox(
+                    width: 16,
+                    child: CustomPaint(
+                      painter: _GradientBarPainter(scale: scale),
+                    ),
+                  ),
+                ),
+
+                // center 값 표시
+                if (scale.center != null &&
+                    scale.center! > scale.min &&
+                    scale.center! < scale.max)
+                  Positioned(
+                    left: 20,
+                    // max가 위, min이 아래이므로 역방향 계산
+                    top: (1 -
+                                (scale.center! - scale.min) /
+                                    (scale.max - scale.min)) *
+                            140 -
+                        6,
+                    child: Text(
+                      scale.center!.toStringAsFixed(1),
+                      style: const TextStyle(
+                        fontSize: 9,
+                        color: Color(0xFF444444),
+                        fontFamily: 'Gothic',
+                      ),
+                    ),
+                  ),
+              ],
             ),
           ),
-          const SizedBox(height: 8),
+          Padding(
+            padding: const EdgeInsets.only(bottom: 8, left: 10),
+            child: Text(
+              minLabel,
+              style: const TextStyle(fontSize: 9, color: Color(0xFF444444)),
+            ),
+          ),
           // 데이터 없음 범례
           Row(
             mainAxisSize: MainAxisSize.min,
             children: [
               Container(width: 10, height: 10, color: _ColorScale._noData),
               const SizedBox(width: 3),
-              const Text('N/A',
-                  style: TextStyle(
-                      fontSize: 8,
-                      color: Color(0xFF888888),
-                      fontFamily: 'Gothic')),
+              const Text('정보 없음',
+                  style: TextStyle(fontSize: 8, color: Color(0xFF888888))),
             ],
           ),
         ],

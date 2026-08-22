@@ -41,6 +41,9 @@ class HealthEffectsViewPage extends GetView<HealthEffectsController> {
                     title: '건강영향 - ${controller.mapTitle}',
                     highlightSggName:
                         controller.fetchedRequest['sgg_']?.toString(),
+                    // 감염병(수인성/말라리아/쯔쯔가무시)만 범례 중간을 0으로 고정, 사망은 기존과 동일
+                    centerAtZero: !MainController.to.selectedSubId.value
+                        .contains('death'),
                   )),
             ),
           ],
