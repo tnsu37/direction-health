@@ -119,8 +119,8 @@ class ResultTableFactory {
     required FutureProjectionResponse data,
   }) {
     final mode = request['mode']?.toString() ?? '';
-    if (mode == 'PM2.5') {
-      return _projectionPM25(data: data);
+    if (mode == 'PM2.5' || mode == 'O3') {
+      return _projectionAP(data: data);
     } else {
       return _projectionTempOrInfectious(request: request, data: data);
     }
@@ -551,25 +551,44 @@ class ResultTableFactory {
         ResultTableModel(headers: headers, rows: rows));
   }
 
-  // ─── Future Projection: PM2.5 ────────────────────────────────────────────
+  // ─── Future Projection: 대기오염(PM2.5 / O3) ─────────────────────────────
+  // 여름철 온도 표와 동일한 형태: 기간이 열, 농도변화율이 행 (정책 열은 제외)
 
-  static ResultTableSet _projectionPM25(
+  static ResultTableSet _projectionAP(
       {required FutureProjectionResponse data}) {
     if (data.summaryData.isEmpty) return ResultTableSet([]);
 
+    // Pivot: change_ap → period → an_sum
+    final Map<int, Map<String, double?>> pivot = {};
+    final Map<String, int> periodOrder = {};
+    final Map<int, int> changeApOrder = {};
+
+    for (final p in data.summaryData) {
+      final ca = p.changeAp ?? 0;
+      if (!periodOrder.containsKey(p.period)) {
+        periodOrder[p.period] = periodOrder.length;
+      }
+      if (!changeApOrder.containsKey(ca)) {
+        changeApOrder[ca] = changeApOrder.length;
+      }
+      pivot[ca] ??= {};
+      pivot[ca]![p.period] = p.anSum;
+    }
+
+    final sortedPeriods = periodOrder.keys.toList()..sort();
+    final sortedChangeAps = changeApOrder.keys.toList()..sort();
+
     final headers = <RtCell>[
-      const RtCell('기간', bold: true),
-      const RtCell('정책', bold: true),
-      const RtCell('농도 변화율', bold: true),
-      const RtCell('초과 사망자 수', bold: true),
+      const RtCell('농도변화율', bold: true),
+      ...sortedPeriods.map((p) => RtCell(_periodLabel(p), bold: true)),
     ];
 
-    final rows = data.summaryData.map((p) {
+    final rows = sortedChangeAps.map((ca) {
+      final isBaseline = ca == 0;
       return <RtCell>[
-        RtCell(_periodLabel(p.period), bold: true),
-        RtCell(_policyLabel(p.policy)),
-        RtCell(_changeApLabel(p.changeAp)),
-        RtCell(_fmtLarge(p.anSum)),
+        RtCell(_changeApLabel(ca), bold: isBaseline),
+        ...sortedPeriods
+            .map((p) => RtCell(_fmtLarge(pivot[ca]?[p]), bold: isBaseline)),
       ];
     }).toList();
 
@@ -631,20 +650,6 @@ class ResultTableFactory {
     if (v == 0) return '변화 없음';
     if (v < 0) return '${v.abs()}% 감소';
     return '$v% 증가';
-  }
-
-  static String _policyLabel(String? policy) {
-    switch (policy) {
-      case 'none':
-      case null:
-        return '정책 없음';
-      case 'greenness':
-        return '녹지';
-      case 'shelter':
-        return '그늘막쉼터';
-      default:
-        return policy;
-    }
   }
 
   static (int?, int?) _parseYearMonth(String period) {
