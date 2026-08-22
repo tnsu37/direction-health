@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:boilerplate/common/api.dart';
 import 'rt_model.dart';
@@ -120,7 +119,7 @@ class ResultTableFactory {
   }) {
     final mode = request['mode']?.toString() ?? '';
     if (mode == 'PM2.5' || mode == 'O3') {
-      return _projectionAP(data: data);
+      return _projectionAP(request: request, data: data);
     } else {
       return _projectionTempOrInfectious(request: request, data: data);
     }
@@ -507,7 +506,6 @@ class ResultTableFactory {
     required FutureProjectionResponse data,
   }) {
     if (data.summaryData.isEmpty) return ResultTableSet([]);
-    final selectedGcms = _parseSelectedGcms(request['gcm_'] ?? request['gcm']);
 
     final Map<String, Map<String, double?>> pivot = {};
     final Map<String, int> periodOrder = {};
@@ -524,8 +522,13 @@ class ResultTableFactory {
     }
 
     final sortedPeriods = periodOrder.keys.toList()..sort();
+    // 앙상블은 항상 마지막 행
     final sortedGcms = gcmOrder.keys.toList()
-      ..sort((a, b) => gcmOrder[a]!.compareTo(gcmOrder[b]!));
+      ..sort((a, b) {
+        if (a == 'Ensemble') return 1;
+        if (b == 'Ensemble') return -1;
+        return gcmOrder[a]!.compareTo(gcmOrder[b]!);
+      });
 
     final headers = <RtCell>[
       const RtCell('GCM', bold: true),
@@ -534,15 +537,12 @@ class ResultTableFactory {
 
     final rows = sortedGcms.map((gcm) {
       final isEnsemble = gcm == 'Ensemble';
-      final isSelected = selectedGcms.contains(gcm);
-      final color = isSelected ? const Color(0xFF1565C0) : null;
       final displayName = isEnsemble ? '앙상블' : gcm;
       return <RtCell>[
-        RtCell(displayName, bold: isEnsemble, textColor: color),
+        RtCell(displayName, bold: isEnsemble),
         ...sortedPeriods.map((p) => RtCell(
               _fmtLarge(pivot[gcm]?[p]),
               bold: isEnsemble,
-              textColor: color,
             )),
       ];
     }).toList();
@@ -554,9 +554,15 @@ class ResultTableFactory {
   // ─── Future Projection: 대기오염(PM2.5 / O3) ─────────────────────────────
   // 여름철 온도 표와 동일한 형태: 기간이 열, 농도변화율이 행 (정책 열은 제외)
 
-  static ResultTableSet _projectionAP(
-      {required FutureProjectionResponse data}) {
+  static ResultTableSet _projectionAP({
+    required Map<String, dynamic> request,
+    required FutureProjectionResponse data,
+  }) {
     if (data.summaryData.isEmpty) return ResultTableSet([]);
+
+    final selectedChangeApRaw = request['change_ap_'] ?? request['change_ap'];
+    final selectedChangeAp =
+        (selectedChangeApRaw is num) ? selectedChangeApRaw.toInt() : 0;
 
     // Pivot: change_ap → period → an_sum
     final Map<int, Map<String, double?>> pivot = {};
@@ -584,11 +590,11 @@ class ResultTableFactory {
     ];
 
     final rows = sortedChangeAps.map((ca) {
-      final isBaseline = ca == 0;
+      final isSelected = ca == selectedChangeAp;
       return <RtCell>[
-        RtCell(_changeApLabel(ca), bold: isBaseline),
+        RtCell(_changeApLabel(ca), bold: isSelected),
         ...sortedPeriods
-            .map((p) => RtCell(_fmtLarge(pivot[ca]?[p]), bold: isBaseline)),
+            .map((p) => RtCell(_fmtLarge(pivot[ca]?[p]), bold: isSelected)),
       ];
     }).toList();
 
@@ -671,13 +677,4 @@ class ResultTableFactory {
     return m?.group(1)?.trim() ?? '연평균';
   }
 
-  // Returns non-Ensemble GCMs that were explicitly requested (get blue text)
-  static List<String> _parseSelectedGcms(dynamic raw) {
-    if (raw == null || (raw is Map && raw.isEmpty)) return [];
-    if (raw is String) return raw == 'Ensemble' ? [] : [raw];
-    if (raw is List) {
-      return raw.cast<String>().where((g) => g != 'Ensemble').toList();
-    }
-    return [];
-  }
 }
