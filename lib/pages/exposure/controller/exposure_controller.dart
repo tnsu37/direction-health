@@ -57,7 +57,6 @@ class ExposureController extends GetxController {
 
   // 초기값: 더미 데이터(여름철 온도, 2019년 8월, 서울특별시)에 맞춤
   String _buildTitle(MainController mc) {
-    final mode = ApiMap.mode(mc.selectedSubId.value);
     final year = mc.filterYear.value;
     final month = mc.filterMonth.value;
     final sido = mc.filterSido.value;
@@ -73,7 +72,7 @@ class ExposureController extends GetxController {
       if (sgg != '전체') sgg,
     ].join(' ');
 
-    return '$mode (${regionPart.isNotEmpty ? regionPart : '전국'}, ${timePart.isNotEmpty ? timePart : '전체 기간'})';
+    return '${MainController.to.selectedSubLabel} (${regionPart.isNotEmpty ? regionPart : '전국'}, ${timePart.isNotEmpty ? timePart : '전체 기간'})';
   }
 
   @override

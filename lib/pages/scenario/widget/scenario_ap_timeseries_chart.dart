@@ -1,4 +1,5 @@
 import 'package:boilerplate/common/api.dart';
+import 'package:boilerplate/common/common.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 
@@ -90,19 +91,14 @@ class ScenarioApTimeSeriesChart extends StatelessWidget {
       );
     }).toList();
 
-    final unitLabel = mode == 'PM2.5' ? '농도(μg/m³)' : '농도(ppm)';
+    final unitLabel = mode == 'PM2.5' ? 'PM₂.₅ (μg/m³)' : 'O₃ (ppm)';
 
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         if (chartTitle.isNotEmpty)
           Padding(
-            padding: const EdgeInsets.only(bottom: 8),
-            child: Text(chartTitle,
-                style: const TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w600,
-                    color: Color(0xFF333333))),
+            padding: const EdgeInsets.only(bottom: 12),
+            child: Text(chartTitle, style: CommonStyle.textStyleFontBlack18600),
           ),
         SizedBox(
           height: 380,
@@ -132,26 +128,28 @@ class ScenarioApTimeSeriesChart extends StatelessWidget {
                 rightTitles:
                     const AxisTitles(sideTitles: SideTitles(showTitles: false)),
                 leftTitles: AxisTitles(
-                  axisNameWidget: Text(unitLabel,
-                      style: const TextStyle(
-                          fontSize: 12, fontWeight: FontWeight.w600)),
-                  sideTitles: SideTitles(
-                    showTitles: true,
-                    reservedSize: 52,
-                    getTitlesWidget: (value, meta) => Text(
-                      value.toStringAsFixed(_decimals),
-                      style: const TextStyle(fontSize: 10, color: Colors.black87),
-                    ),
+                  axisNameSize: 30,
+                  axisNameWidget: Padding(
+                    padding: const EdgeInsets.only(bottom: 10),
+                    child: Text(unitLabel, style: CommonStyle.textStyle13600),
                   ),
+                  sideTitles: SideTitles(
+                      showTitles: true,
+                      reservedSize: 30,
+                      getTitlesWidget: (value, meta) {
+                        if ((value - yMax).abs() < 0.0001) {
+                          return const SizedBox.shrink();
+                        }
+                        return Text(
+                          value.toStringAsFixed(_decimals),
+                          style: const TextStyle(
+                              fontSize: 10, color: Colors.black87),
+                        );
+                      }),
                 ),
                 bottomTitles: AxisTitles(
-                  axisNameWidget: const Padding(
-                    padding: EdgeInsets.only(top: 8),
-                    child: Text('시점',
-                        style: TextStyle(
-                            fontSize: 12, fontWeight: FontWeight.w600)),
-                  ),
-                  axisNameSize: 32,
+                  axisNameWidget: Text('시점', style: CommonStyle.textStyle13600),
+                  axisNameSize: 35,
                   sideTitles: SideTitles(
                     showTitles: true,
                     interval: 1,
@@ -169,18 +167,7 @@ class ScenarioApTimeSeriesChart extends StatelessWidget {
                   ),
                 ),
               ),
-              lineTouchData: LineTouchData(
-                enabled: true,
-                touchTooltipData: LineTouchTooltipData(
-                  getTooltipItems: (spots) => spots.map((spot) {
-                    final ca = changeAps[spot.barIndex];
-                    return LineTooltipItem(
-                      '${_changeApLabel(ca)}\n${spot.y.toStringAsFixed(_decimals)}',
-                      const TextStyle(color: Colors.white, fontSize: 11),
-                    );
-                  }).toList(),
-                ),
-              ),
+              lineTouchData: const LineTouchData(enabled: false),
               lineBarsData: bars,
             ),
           ),

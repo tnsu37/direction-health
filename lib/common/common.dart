@@ -116,10 +116,7 @@ class CommonStyle {
       color: CommonColor.fontBlack,
       height: 1);
   static TextStyle textStyleFontBlack27300 = TextStyle(
-      fontSize: 27,
-      fontWeight: FontWeight.w300,
-      color: CommonColor.fontBlack,
-      height: 1);
+      fontSize: 27, fontWeight: FontWeight.w300, color: CommonColor.fontBlack);
   static TextStyle textStyleFontBlack30500 = TextStyle(
       fontSize: 30, fontWeight: FontWeight.w500, color: CommonColor.fontBlack);
   static TextStyle textStyleFontBlack30700 = TextStyle(
@@ -352,15 +349,6 @@ class Common {
 
   ///[적응정책] 여름철온도
   static const List<String> adaptations1 = ['없음', '녹지', '그늘막쉼터'];
-
-  // static List<ValueItem<int>> gcm = const [
-  //   ValueItem(label: '앙상블', value: 0),
-  //   ValueItem(label: 'WRF', value: 1),
-  //   ValueItem(label: 'CCLM', value: 2),
-  //   ValueItem(label: 'GRIMs', value: 3),
-  //   ValueItem(label: 'HadGEM3-RA', value: 4),
-  //   ValueItem(label: 'RegCM', value: 5),
-  // ];
 
   static String unit(String subId) {
     final id = subId.toLowerCase();

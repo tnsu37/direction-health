@@ -1,4 +1,5 @@
 import 'package:boilerplate/common/api.dart';
+import 'package:boilerplate/common/common.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 
@@ -17,21 +18,21 @@ class ScenarioTempChart extends StatelessWidget {
   final List<String> selectedGcms;
 
   static const Map<String, Color> _gcmColors = {
-    'Ensemble': Color(0xFF1A3A6B),
-    'WRF': Color(0xFFE65100),
-    'CCLM': Color(0xFF2E7D32),
-    'GRIMs': Color(0xFF6A1B9A),
-    'HadGEM3-RA': Color(0xFF00695C),
-    'RegCM': Color(0xFFC62828),
+    'Ensemble': Color(0xFF243B64),
+    'WRF': Color(0xFFE07A3F),
+    'CCLM': Color(0xFF4E9B69),
+    'GRIMs': Color(0xFF9B6BC1),
+    'HadGEM3-RA': Color(0xFF2F91B3),
+    'RegCM': Color(0xFFD95763),
   };
 
   static const List<Color> _fallbackColors = [
-    Color(0xFF1565C0),
-    Color(0xFFEF6C00),
-    Color(0xFF2E7D32),
-    Color(0xFF6A1B9A),
-    Color(0xFF00695C),
-    Color(0xFFC62828),
+    Color(0xFF2F91B3), // 블루
+    Color(0xFFE07A3F), // 오렌지
+    Color(0xFF4E9B69), // 그린
+    Color(0xFF9B6BC1), // 퍼플
+    Color(0xFFD95763), // 레드
+    Color(0xFFB58A3D), // 골드
   ];
 
   @override
@@ -59,7 +60,26 @@ class ScenarioTempChart extends StatelessWidget {
     final yMin = (minY - yPad).floorToDouble();
     final yMax = (maxY + yPad).ceilToDouble();
 
-    final gcmList = byGcm.keys.toList();
+    const gcmOrder = [
+      'WRF',
+      'CCLM',
+      'GRIMs',
+      'HadGEM3-RA',
+      'RegCM',
+      'Ensemble',
+    ];
+
+    final gcmList = byGcm.keys.toList()
+      ..sort((a, b) {
+        final ai = gcmOrder.indexOf(a);
+        final bi = gcmOrder.indexOf(b);
+
+        if (ai == -1 && bi == -1) return a.compareTo(b);
+        if (ai == -1) return -1;
+        if (bi == -1) return 1;
+
+        return ai.compareTo(bi);
+      });
 
     // Line bars
 // 2060~2080 구간은 그래프를 표시하지 않기 위해
@@ -190,16 +210,11 @@ class ScenarioTempChart extends StatelessWidget {
     final unitLabel = mode == '여름철 온도' ? '평균 온도(℃)' : '연평균 온도(℃)';
 
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         if (chartTitle.isNotEmpty)
           Padding(
-            padding: const EdgeInsets.only(bottom: 8),
-            child: Text(chartTitle,
-                style: const TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w600,
-                    color: Color(0xFF333333))),
+            padding: const EdgeInsets.only(bottom: 12),
+            child: Text(chartTitle, style: CommonStyle.textStyleFontBlack18600),
           ),
         SizedBox(
           height: 380,
@@ -286,6 +301,7 @@ class ScenarioTempChart extends StatelessWidget {
         const SizedBox(height: 10),
         // Legend
         Wrap(
+          alignment: WrapAlignment.center,
           spacing: 16,
           runSpacing: 4,
           children: gcmList.asMap().entries.map((entry) {

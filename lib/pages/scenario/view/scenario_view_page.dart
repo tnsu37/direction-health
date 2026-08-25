@@ -16,19 +16,10 @@ class ScenarioViewPage extends GetView<ScenarioController> {
   Widget build(BuildContext context) {
     return Obx(() {
       final data = controller.result.value;
-      if (data == null) {
-        return const Center(
-          child: Text(
-            '조회 버튼을 눌러 데이터를 불러오세요.',
-            style: TextStyle(fontSize: 14, color: Colors.black45),
-          ),
-        );
-      }
-
       final request = controller.fetchedRequest;
       final mode = request['mode']?.toString() ?? '';
       final isAP = mode == 'PM2.5' || mode == 'O3';
-      final chartWidth = Common.bigSize.value ? 700.0 : 520.0;
+      final chartWidth = Common.bigSize.value ? 750.0 : 520.0;
       final chartTitle = _buildChartTitle(request);
 
       final tableSet = ResultTableFactory.fromFutureScenario(
@@ -61,7 +52,7 @@ class ScenarioViewPage extends GetView<ScenarioController> {
                       targetPeriod: targetPeriod,
                     ),
             ),
-            const SizedBox(width: 24),
+            const SizedBox(width: 50),
             ResultTable(tableSet: tableSet),
           ],
         );
@@ -78,7 +69,7 @@ class ScenarioViewPage extends GetView<ScenarioController> {
                 selectedGcms: _parseGcms(request['gcm']),
               ),
             ),
-            const SizedBox(width: 24),
+            const SizedBox(width: 50),
             ResultTable(tableSet: tableSet),
           ],
         );
@@ -94,7 +85,7 @@ class ScenarioViewPage extends GetView<ScenarioController> {
     final isAP = mode == 'PM2.5' || mode == 'O3';
 
     if (isAP) {
-      return '$region $mode 중간값 수준별 평균농도';
+      return '$mode 증감 수준별 미래 평균농도';
     } else {
       final sspRaw = request['ssp']?.toString() ?? '';
       final sspLabel = _sspLabel(sspRaw);

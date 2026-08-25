@@ -18,14 +18,13 @@ class ResultTable extends StatelessWidget {
   bool get _isBig => Common.bigSize.value;
 
   double get _labelColW => _isBig ? 118 : 90;
-  double get _dataColW => _isBig ? 95 : 72;
 
   double get _rowH => _isBig ? 35 : 32;
 
   double get _fontSize => _isBig ? 13 : 11;
 
   double get _horizontalPadding => _isBig ? 8 : 4;
-  double get _verticalPadding => _isBig ? 4 : 2;
+  double get _verticalPadding => _isBig ? 3.2 : 2;
 
   bool _isMonthlyWideTable(ResultTableModel model) {
     final monthHeaderCount = model.headers.where((cell) {
@@ -33,14 +32,14 @@ class ResultTable extends StatelessWidget {
     }).length;
 
     // 여러 개의 월이 열 방향으로 배치된 경우
-    return monthHeaderCount >= 2;
+    return monthHeaderCount >= 3;
   }
 
   double _dataColWidth(ResultTableModel model) {
     if (_isMonthlyWideTable(model)) {
       return _isBig ? 70 : 50;
     }
-    return _isBig ? 95 : 73;
+    return _isBig ? 116 : 73;
   }
 
   @override
@@ -55,7 +54,7 @@ class ResultTable extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: visibleTables.indexed.map((entry) {
         final (i, model) = entry;
-
+        final dataColW = _dataColWidth(model);
         return Padding(
           padding: EdgeInsets.only(
             top: i == 0 ? 0 : (_isBig ? 16 : 10),
@@ -65,24 +64,19 @@ class ResultTable extends StatelessWidget {
             child: Container(
               decoration: const BoxDecoration(
                 border: Border(
-                  left: BorderSide(
-                    color: _borderColor,
-                    width: 0.5,
-                  ),
-                  top: BorderSide(
-                    color: _borderColor,
-                    width: 0.5,
-                  ),
+                  left: BorderSide(color: _borderColor, width: 0.5),
+                  top: BorderSide(color: _borderColor, width: 0.5),
                 ),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   if (model.groupHeaders != null)
-                    _buildGroupRow(model.groupHeaders!),
-                  _buildRow(model.headers, model: model, isHeader: true),
+                    _buildGroupRow(model.groupHeaders!, dataColW),
+                  _buildRow(model.headers, dataColW: dataColW, isHeader: true),
                   ...model.rows.map(
-                    (row) => _buildRow(row, model: model, isHeader: false),
+                    (row) =>
+                        _buildRow(row, dataColW: dataColW, isHeader: false),
                   ),
                 ],
               ),
@@ -93,13 +87,13 @@ class ResultTable extends StatelessWidget {
     );
   }
 
-  Widget _buildGroupRow(List<RtHeaderGroup> groups) {
+  Widget _buildGroupRow(List<RtHeaderGroup> groups, double dataColW) {
     return Row(
       children: groups.asMap().entries.map((entry) {
         final i = entry.key;
         final g = entry.value;
 
-        final width = i == 0 ? _labelColW * g.span : _dataColW * g.span;
+        final width = i == 0 ? _labelColW * g.span : dataColW * g.span;
 
         return _cell(
           g.label,
@@ -114,11 +108,9 @@ class ResultTable extends StatelessWidget {
 
   Widget _buildRow(
     List<RtCell> cells, {
-    required ResultTableModel model,
+    required double dataColW,
     required bool isHeader,
   }) {
-    final dataColW = _dataColWidth(model);
-
     return Row(
       children: cells.asMap().entries.map((entry) {
         final i = entry.key;

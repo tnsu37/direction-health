@@ -84,10 +84,27 @@ class TimeSeries extends StatelessWidget {
 
     final range = (dataMax - dataMin).abs();
 
-    final padding = range == 0 ? dataMax.abs() * 0.2 : range * 0.2;
+    late final double minY;
+    late final double maxY;
+    late final double yInterval;
 
-    final minY = (dataMin - padding).floorToDouble();
-    final maxY = (dataMax + padding).ceilToDouble();
+    if (mode == 'O3') {
+      final padding = range == 0 ? 0.01 : range * 0.2;
+
+      // 0.01 단위로 내림/올림
+      minY = ((dataMin - padding) * 100).floor() / 100.0;
+      maxY = ((dataMax + padding) * 100).ceil() / 100.0;
+
+      // 오존은 0.01 간격 권장
+      yInterval = 0.01;
+    } else {
+      final padding = range == 0 ? dataMax.abs() * 0.2 : range * 0.2;
+
+      minY = (dataMin - padding).floorToDouble();
+      maxY = (dataMax + padding).ceilToDouble();
+
+      yInterval = 5;
+    }
 
     final xAxisLabelMode = _detectXAxisLabelMode();
 
@@ -102,7 +119,7 @@ class TimeSeries extends StatelessWidget {
           gridData: FlGridData(
             show: true,
             drawVerticalLine: false,
-            horizontalInterval: 5,
+            horizontalInterval: yInterval,
             getDrawingHorizontalLine: (value) {
               return FlLine(
                 color: Colors.grey.withOpacity(0.15),

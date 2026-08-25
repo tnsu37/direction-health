@@ -75,13 +75,23 @@ class MainViewPage extends GetView<MainController> {
                                       ),
                                       Container(
                                         margin: const EdgeInsets.only(
-                                            bottom: 50, left: 45),
+                                            bottom: 50, left: 10, right: 10),
                                         padding: const EdgeInsets.symmetric(
                                             vertical: 15, horizontal: 30),
                                         width:
                                             Common.bigSize.value ? 1650 : 1100,
                                         color: const Color(0xffF4F4F4),
-                                        child: Text('참고사항'),
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Text('참고사항',
+                                                style:
+                                                    CommonStyle.textStyle16500),
+                                            const SizedBox(height: 10),
+                                            
+                                          ],
+                                        ),
                                       ),
                                     ],
                                   ))),

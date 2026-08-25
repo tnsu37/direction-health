@@ -20,13 +20,13 @@ class GlobalLoading extends StatelessWidget {
             animation: animation,
             builder: (context, child) => Transform.rotate(
               angle: animation.value,
-              child: Image.asset('assets/logo/direction.png', width: 300),
+              child: Image.asset('assets/logo/direction.png', width: 150),
             ),
           ),
         ),
         Text(
           '데이터를 불러오고 있습니다. 잠시만 기다려 주세요.',
-          style: CommonStyle.textStyleFontBlack27300,
+          style: CommonStyle.textStyle24500,
         )
       ],
     );
