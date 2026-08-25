@@ -12,7 +12,11 @@ class ScenarioController extends GetxController {
   RxString error = ''.obs;
   Map<String, dynamic> fetchedRequest = {};
 
+  // 응답이 요청 순서와 다르게 도착해도 최신 요청 결과만 반영되도록 하는 시퀀스 가드
+  int _fetchSeq = 0;
+
   Future<void> fetch() async {
+    final seq = ++_fetchSeq;
     final mc = MainController.to;
     final subId = mc.selectedSubId.value;
     final isTemp = subId == 'annualTemp' || subId == 'summerTemp';
@@ -29,6 +33,8 @@ class ScenarioController extends GetxController {
         gcm_: isTemp ? ApiMap.gcm(mc.filterClimateModels) : null,
         changeAp_: !isTemp ? mc.filterConcChange.value : null,
       );
+      if (seq != _fetchSeq) return;
+
       fetchedRequest = {
         'mode': ApiMap.mode(subId),
         'target_period': ApiMap.period(mc.filterPeriod.value),
@@ -39,10 +45,13 @@ class ScenarioController extends GetxController {
       result.value = res.data!;
       if (res.isEmpty) error.value = res.message ?? '데이터가 없습니다.';
     } on ApiException catch (e) {
+      if (seq != _fetchSeq) return;
       error.value = e.message;
     } finally {
-      mc.animationController.stop();
-      Common.isLoading.value = false;
+      if (seq == _fetchSeq) {
+        mc.animationController.stop();
+        Common.isLoading.value = false;
+      }
     }
   }
 

@@ -15,7 +15,7 @@ class GlobalLoading extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: [
         Padding(
-          padding: const EdgeInsets.only(top: 80, bottom: 30),
+          padding: const EdgeInsets.only(top: 80, bottom: 60),
           child: AnimatedBuilder(
             animation: animation,
             builder: (context, child) => Transform.rotate(

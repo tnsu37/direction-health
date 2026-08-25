@@ -35,7 +35,11 @@ class HealthEffectsController extends GetxController {
         : '기여발생건수';
   }
 
+  // 응답이 요청 순서와 다르게 도착해도 최신 요청 결과만 반영되도록 하는 시퀀스 가드
+  int _fetchSeq = 0;
+
   Future<void> fetch() async {
+    final seq = ++_fetchSeq;
     final mc = MainController.to;
     Common.isLoading.value = true;
     mc.animationController.repeat();
@@ -47,6 +51,7 @@ class HealthEffectsController extends GetxController {
         sido_: mc.filterSido.value,
         sgg_: mc.filterSigungu.value,
       );
+      if (seq != _fetchSeq) return;
 
       fetchedSido = mc.filterSido.value;
       fetchedRequest = {
@@ -59,11 +64,14 @@ class HealthEffectsController extends GetxController {
       result.value = res.data ?? PastHealthRiskResponse.empty;
       if (res.isEmpty) error.value = res.message ?? '데이터가 없습니다.';
     } on ApiException catch (e) {
+      if (seq != _fetchSeq) return;
       mapTitle = _buildTitle(mc);
       error.value = e.message;
     } finally {
-      mc.animationController.stop();
-      Common.isLoading.value = false;
+      if (seq == _fetchSeq) {
+        mc.animationController.stop();
+        Common.isLoading.value = false;
+      }
     }
   }
 
