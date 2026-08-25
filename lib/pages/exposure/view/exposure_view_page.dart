@@ -33,8 +33,11 @@ class ExposureViewPage extends GetView<ExposureController> {
               width: _isBig ? 800 : 650,
               height: 320,
               child: Obx(() => TimeSeries(
-                  timeseriesData: controller.result.value.timeseriesData,
-                  mode: controller.fetchedRequest['mode']?.toString() ?? '')),
+                    timeseriesData: controller.result.value.timeseriesData,
+                    mode: controller.fetchedRequest['mode']?.toString() ?? '',
+                    yTitle:
+                        '${MainController.to.selectedSubLabel} (${Common.unit(MainController.to.selectedSubId.value)})',
+                  )),
             ),
             const SizedBox(height: 50),
             Obx(() {

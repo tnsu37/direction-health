@@ -27,6 +27,22 @@ class ResultTable extends StatelessWidget {
   double get _horizontalPadding => _isBig ? 8 : 4;
   double get _verticalPadding => _isBig ? 4 : 2;
 
+  bool _isMonthlyWideTable(ResultTableModel model) {
+    final monthHeaderCount = model.headers.where((cell) {
+      return RegExp(r'^\d{1,2}월$').hasMatch(cell.text);
+    }).length;
+
+    // 여러 개의 월이 열 방향으로 배치된 경우
+    return monthHeaderCount >= 2;
+  }
+
+  double _dataColWidth(ResultTableModel model) {
+    if (_isMonthlyWideTable(model)) {
+      return _isBig ? 70 : 50;
+    }
+    return _isBig ? 95 : 73;
+  }
+
   @override
   Widget build(BuildContext context) {
     final visibleTables = tableSet.tables.where((t) => !t.isEmpty).toList();
@@ -64,15 +80,9 @@ class ResultTable extends StatelessWidget {
                 children: [
                   if (model.groupHeaders != null)
                     _buildGroupRow(model.groupHeaders!),
-                  _buildRow(
-                    model.headers,
-                    isHeader: true,
-                  ),
+                  _buildRow(model.headers, model: model, isHeader: true),
                   ...model.rows.map(
-                    (row) => _buildRow(
-                      row,
-                      isHeader: false,
-                    ),
+                    (row) => _buildRow(row, model: model, isHeader: false),
                   ),
                 ],
               ),
@@ -104,18 +114,21 @@ class ResultTable extends StatelessWidget {
 
   Widget _buildRow(
     List<RtCell> cells, {
+    required ResultTableModel model,
     required bool isHeader,
   }) {
+    final dataColW = _dataColWidth(model);
+
     return Row(
       children: cells.asMap().entries.map((entry) {
         final i = entry.key;
         final cell = entry.value;
 
-        final width = i == 0 ? _labelColW : _dataColW;
+        final w = i == 0 ? _labelColW : dataColW;
 
         return _cell(
           cell.text,
-          width: width,
+          width: w,
           height: isHeader ? headerH ?? _rowH : _rowH,
           isHeader: isHeader,
           bold: isHeader || cell.bold,

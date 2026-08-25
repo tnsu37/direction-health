@@ -284,7 +284,7 @@ class ResultTableFactory {
 
     final headers = <RtCell>[
       const RtCell('', bold: true),
-      RtCell('${selectedYear ?? yearStr}년 - ${selectedMonth ?? monthStr}월',
+      RtCell('${selectedYear ?? yearStr}년-${selectedMonth ?? monthStr}월',
           bold: true),
     ];
 
@@ -634,7 +634,7 @@ class ResultTableFactory {
       return '${sorted.first}월 평균';
     }
 
-    return '${sorted.first}-${sorted.last}월 평균';
+    return '평균';
   }
 
   static String _periodLabel(String period) {
@@ -676,5 +676,4 @@ class ResultTableFactory {
     final m = RegExp(r'\d{4}년\s*(.+)').firstMatch(period);
     return m?.group(1)?.trim() ?? '연평균';
   }
-
 }
