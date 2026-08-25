@@ -67,8 +67,22 @@ class MainViewPage extends GetView<MainController> {
                                         CrossAxisAlignment.start,
                                     children: [
                                       GlobalFilterBar(controller: controller),
-                                      pageWidgetList[
-                                          controller.selectedMenu.value.index],
+                                      Padding(
+                                        padding: const EdgeInsets.symmetric(
+                                            vertical: 30),
+                                        child: pageWidgetList[controller
+                                            .selectedMenu.value.index],
+                                      ),
+                                      Container(
+                                        margin: const EdgeInsets.only(
+                                            bottom: 50, left: 45),
+                                        padding: const EdgeInsets.symmetric(
+                                            vertical: 15, horizontal: 30),
+                                        width:
+                                            Common.bigSize.value ? 1650 : 1100,
+                                        color: const Color(0xffF4F4F4),
+                                        child: Text('참고사항'),
+                                      ),
                                     ],
                                   ))),
                       ),
