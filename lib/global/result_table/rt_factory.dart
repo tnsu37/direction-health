@@ -391,10 +391,51 @@ class ResultTableFactory {
 
     if (isDefault) {
       return _scenarioAPDefault(data, unitLabel, baseVal, mode);
+    } else if (targetPeriod == '전체') {
+      // 기간 전체 & 농도변화만 선택 → 기준기간 + 근/중/먼미래 4행
+      return _scenarioAPAllPeriods(data, unitLabel, baseVal, mode);
     } else {
       return _scenarioAPSelected(
           data, request, unitLabel, baseVal, changeAp, mode);
     }
+  }
+
+  static ResultTableSet _scenarioAPAllPeriods(
+    FutureExposureResponse data,
+    String unitLabel,
+    dynamic baseVal,
+    String mode,
+  ) {
+    // 근/중/먼미래 3개 구간만 표시 (2061-2080 등 정의되지 않은 구간 제외)
+    final periodEntries = data.selectedScenario
+        .where((e) => _isForecastPeriod(e['period']?.toString() ?? ''))
+        .toList()
+      ..sort((a, b) => (a['period']?.toString() ?? '')
+          .compareTo(b['period']?.toString() ?? ''));
+
+    final rows = <List<RtCell>>[
+      [
+        const RtCell('기준 기간(2015-2019)', bold: true),
+        RtCell(_fmtByMode(baseVal is num ? baseVal.toDouble() : null, mode)),
+      ],
+      ...periodEntries.map((e) {
+        final proj = (e['proj_val'] as num?)?.toDouble();
+        return <RtCell>[
+          RtCell(_periodLabelLine(e['period']?.toString() ?? ''), bold: true),
+          RtCell(_fmtByMode(proj, mode)),
+        ];
+      }),
+    ];
+
+    final table = ResultTableModel(
+      headers: [
+        const RtCell('', bold: true),
+        RtCell(unitLabel, bold: true),
+      ],
+      rows: rows,
+    );
+
+    return ResultTableSet.single(table);
   }
 
   static ResultTableSet _scenarioAPDefault(
@@ -650,6 +691,12 @@ class ResultTableFactory {
     if (period.contains('2081-2100')) return '먼미래(2081-2100)';
     return period;
   }
+
+  // 근/중/먼미래로 정의된 3개 구간인지 여부 (2061-2080 등은 미정의 구간으로 제외)
+  static bool _isForecastPeriod(String period) =>
+      period.contains('2031-2040') ||
+      period.contains('2041-2060') ||
+      period.contains('2081-2100');
 
   static String _changeApLabel(int? v) {
     if (v == null) return '-';

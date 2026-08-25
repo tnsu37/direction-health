@@ -5,6 +5,7 @@ import 'package:boilerplate/pages/main/controller/main_controller.dart';
 import 'package:get/get.dart';
 import 'package:flutter/material.dart';
 import '../controller/scenario_controller.dart';
+import '../widget/scenario_ap_all_periods_chart.dart';
 import '../widget/scenario_ap_chart.dart';
 import '../widget/scenario_ap_timeseries_chart.dart';
 import '../widget/scenario_temp_chart.dart';
@@ -33,24 +34,39 @@ class ScenarioViewPage extends GetView<ScenarioController> {
         final changeAp = (changeApRaw is num) ? changeApRaw.toInt() : 0;
         // 기간·농도변화를 아직 좁혀 선택하지 않은 디폴트/지역선택 상태 → 시계열 라인차트
         final isDefault = targetPeriod == '전체' && changeAp == 0;
+        // 기간은 전체, 농도변화율만 특정 값을 선택한 상태 → 시점별(기준/근/중/먼미래) 4개 막대그래프
+        final isAllPeriodsSelected = targetPeriod == '전체' && changeAp != 0;
+
+        final Widget apChart;
+        if (isDefault) {
+          apChart = ScenarioApTimeSeriesChart(
+            data: data,
+            mode: mode,
+            chartTitle: chartTitle,
+          );
+        } else if (isAllPeriodsSelected) {
+          apChart = ScenarioApAllPeriodsChart(
+            data: data,
+            mode: mode,
+            chartTitle: chartTitle,
+            changeAp: changeAp,
+          );
+        } else {
+          apChart = ScenarioApChart(
+            data: data,
+            mode: mode,
+            chartTitle: chartTitle,
+            targetPeriod: targetPeriod,
+            changeAp: changeAp,
+          );
+        }
 
         return Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             SizedBox(
               width: chartWidth,
-              child: isDefault
-                  ? ScenarioApTimeSeriesChart(
-                      data: data,
-                      mode: mode,
-                      chartTitle: chartTitle,
-                    )
-                  : ScenarioApChart(
-                      data: data,
-                      mode: mode,
-                      chartTitle: chartTitle,
-                      targetPeriod: targetPeriod,
-                    ),
+              child: apChart,
             ),
             const SizedBox(width: 50),
             ResultTable(tableSet: tableSet),

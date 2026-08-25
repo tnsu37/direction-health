@@ -2,6 +2,8 @@ import 'package:boilerplate/common/api.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 
+/// 기후변화시나리오 - 대기오염(PM2.5/O3) - 기간 & 농도변화율을 모두 선택한 상태 차트.
+/// X축: 시점(기준기간/선택한 기간), Y축: 농도. 기준기간 vs 선택값 2개짜리 막대그래프.
 class ScenarioApChart extends StatelessWidget {
   const ScenarioApChart({
     super.key,
@@ -9,60 +11,72 @@ class ScenarioApChart extends StatelessWidget {
     required this.mode,
     required this.chartTitle,
     required this.targetPeriod,
+    required this.changeAp,
   });
 
   final FutureExposureResponse data;
   final String mode;
   final String chartTitle;
   final String targetPeriod;
+  final int changeAp;
 
   static const Color _barColor = Color(0xFF1A3A6B);
   static const Color _baselineColor = Color(0xFFD32F2F);
 
   int get _decimals => mode == 'O3' ? 2 : 1;
 
+  String _shortPeriodLabel(String period) {
+    if (period.contains('2031-2040')) return '근미래';
+    if (period.contains('2041-2060')) return '중미래';
+    if (period.contains('2081-2100')) return '먼미래';
+    return period;
+  }
+
+  String _changeLabel(int v) {
+    if (v == 0) return '기준(0%)';
+    final sign = v > 0 ? '+' : '';
+    return '$sign$v%';
+  }
+
   @override
   Widget build(BuildContext context) {
-    // 표시할 기간 결정 — '전체'이면 첫 번째 non-baseline 기간
-    String displayPeriod = targetPeriod;
-    if (displayPeriod == '전체') {
-      final first = data.fullSummary.firstWhere(
-        (e) => !(e['period']?.toString().contains('Baseline') == true),
-        orElse: () => {},
-      );
-      displayPeriod = first['period']?.toString() ?? '';
-    }
+    final baseline = data.selectedScenario.firstWhere(
+      (e) => e['period']?.toString().contains('Baseline') == true,
+      orElse: () => {},
+    );
+    final selected = data.selectedScenario.firstWhere(
+      (e) => !(e['period']?.toString().contains('Baseline') == true),
+      orElse: () => {},
+    );
 
-    final entries = data.fullSummary
-        .where((e) => e['period']?.toString() == displayPeriod)
-        .toList()
-      ..sort((a, b) => ((a['change_ap'] as num?)?.toInt() ?? 0)
-          .compareTo((b['change_ap'] as num?)?.toInt() ?? 0));
+    final baseVal = (baseline['proj_val'] as num?)?.toDouble();
+    final selectedVal = (selected['proj_val'] as num?)?.toDouble();
+    final selectedPeriodLabel =
+        _shortPeriodLabel(selected['period']?.toString() ?? targetPeriod);
 
-    if (entries.isEmpty) return const SizedBox.shrink();
-
-    final changeAps = entries.map((e) => (e['change_ap'] as num).toInt()).toList();
-    final projVals = entries.map((e) => (e['proj_val'] as num).toDouble()).toList();
-    final maxY = projVals.reduce((a, b) => a > b ? a : b) * 1.22;
+    final values = <double?>[baseVal, selectedVal];
+    final validVals = values.whereType<double>().toList();
+    if (validVals.isEmpty) return const SizedBox.shrink();
+    final maxY = validVals.reduce((a, b) => a > b ? a : b) * 1.22;
 
     final unitLabel = mode == 'PM2.5' ? '농도(μg/m³)' : '농도(ppm)';
-    final labelEvery = changeAps.length > 15 ? 2 : 1;
+    final labels = ['기준', selectedPeriodLabel];
 
-    final barGroups = entries.asMap().entries.map((entry) {
-      final i = entry.key;
-      final ca = changeAps[i];
-      return BarChartGroupData(
-        x: i,
-        barRods: [
-          BarChartRodData(
-            toY: projVals[i],
-            color: ca == 0 ? _baselineColor : _barColor,
-            width: 20,
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(2)),
-          ),
-        ],
-      );
-    }).toList();
+    final barGroups = <BarChartGroupData>[
+      for (int i = 0; i < values.length; i++)
+        BarChartGroupData(
+          x: i,
+          barRods: [
+            BarChartRodData(
+              toY: values[i] ?? 0,
+              color: i == 0 ? _baselineColor : _barColor,
+              width: 36,
+              borderRadius:
+                  const BorderRadius.vertical(top: Radius.circular(2)),
+            ),
+          ],
+        ),
+    ];
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -71,7 +85,10 @@ class ScenarioApChart extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.only(bottom: 8),
             child: Text(chartTitle,
-                style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Color(0xFF333333))),
+                style: const TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    color: Color(0xFF333333))),
           ),
         SizedBox(
           height: 380,
@@ -83,8 +100,8 @@ class ScenarioApChart extends StatelessWidget {
               gridData: FlGridData(
                 show: true,
                 drawVerticalLine: false,
-                getDrawingHorizontalLine: (v) =>
-                    FlLine(color: Colors.grey.withOpacity(0.15), strokeWidth: 1),
+                getDrawingHorizontalLine: (v) => FlLine(
+                    color: Colors.grey.withOpacity(0.15), strokeWidth: 1),
               ),
               borderData: FlBorderData(
                 show: true,
@@ -98,36 +115,38 @@ class ScenarioApChart extends StatelessWidget {
                 touchTooltipData: BarTouchTooltipData(
                   tooltipBgColor: const Color(0xFF333333),
                   getTooltipItem: (group, groupIndex, rod, rodIndex) {
-                    final ca = changeAps[group.x];
-                    final sign = ca > 0 ? '+' : '';
-                    final label = ca == 0 ? '기준(0%)' : '$sign$ca%';
                     return BarTooltipItem(
-                      '$label\n${rod.toY.toStringAsFixed(_decimals)}',
+                      '${labels[group.x]}\n${rod.toY.toStringAsFixed(_decimals)}',
                       const TextStyle(color: Colors.white, fontSize: 11),
                     );
                   },
                 ),
               ),
               titlesData: FlTitlesData(
-                topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                topTitles: const AxisTitles(
+                    sideTitles: SideTitles(showTitles: false)),
+                rightTitles: const AxisTitles(
+                    sideTitles: SideTitles(showTitles: false)),
                 leftTitles: AxisTitles(
                   axisNameWidget: Text(unitLabel,
-                      style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
+                      style: const TextStyle(
+                          fontSize: 12, fontWeight: FontWeight.w600)),
                   sideTitles: SideTitles(
                     showTitles: true,
                     reservedSize: 52,
                     getTitlesWidget: (value, meta) => Text(
                       value.toStringAsFixed(_decimals),
-                      style: const TextStyle(fontSize: 10, color: Colors.black87),
+                      style: const TextStyle(
+                          fontSize: 10, color: Colors.black87),
                     ),
                   ),
                 ),
                 bottomTitles: AxisTitles(
                   axisNameWidget: const Padding(
                     padding: EdgeInsets.only(top: 8),
-                    child: Text('농도변화 수준(%)',
-                        style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
+                    child: Text('시점',
+                        style: TextStyle(
+                            fontSize: 12, fontWeight: FontWeight.w600)),
                   ),
                   axisNameSize: 32,
                   sideTitles: SideTitles(
@@ -135,15 +154,15 @@ class ScenarioApChart extends StatelessWidget {
                     interval: 1,
                     getTitlesWidget: (value, meta) {
                       final i = value.toInt();
-                      if (i < 0 || i >= changeAps.length) return const SizedBox.shrink();
-                      if (i % labelEvery != 0) return const SizedBox.shrink();
-                      final ca = changeAps[i];
-                      final sign = ca > 0 ? '+' : '';
-                      final label = ca == 0 ? '기준' : '$sign$ca%';
+                      if (i < 0 || i >= labels.length) {
+                        return const SizedBox.shrink();
+                      }
                       return SideTitleWidget(
                         axisSide: meta.axisSide,
                         space: 6,
-                        child: Text(label, style: const TextStyle(fontSize: 9, color: Colors.black87)),
+                        child: Text(labels[i],
+                            style: const TextStyle(
+                                fontSize: 10, color: Colors.black87)),
                       );
                     },
                   ),
@@ -156,14 +175,18 @@ class ScenarioApChart extends StatelessWidget {
         // Legend
         Row(
           children: [
-            Container(width: 16, height: 14, color: _baselineColor,
+            Container(
+                width: 16,
+                height: 14,
+                color: _baselineColor,
                 child: const SizedBox.shrink()),
             const SizedBox(width: 5),
-            const Text('기준기간(0%)', style: TextStyle(fontSize: 11)),
+            const Text('기준기간(2015-2019)', style: TextStyle(fontSize: 11)),
             const SizedBox(width: 18),
             Container(width: 16, height: 14, color: _barColor),
             const SizedBox(width: 5),
-            const Text('농도변화', style: TextStyle(fontSize: 11)),
+            Text('$selectedPeriodLabel · ${_changeLabel(changeAp)}',
+                style: const TextStyle(fontSize: 11)),
           ],
         ),
       ],
