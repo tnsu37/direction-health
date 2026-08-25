@@ -57,8 +57,9 @@ class ReferenceNotes extends StatelessWidget {
     _RefSection('■ 참고', [
       '대기오염의 경우 장기 미래 예측의 불확실성이 매우 높아 현 시점 대비 증감 수준별 결과를 제공함',
     ]),
-    _RefSection('■ 단위', [
+    _RefSection('■ 단위 및 기간', [
       '온도: °C / PM2.5: ㎍/㎥ / O3: ppm',
+      '근미래: 2031-2040 / 중미래: 2041-2060 / 먼미래: 2081-2100'
     ]),
   ];
 

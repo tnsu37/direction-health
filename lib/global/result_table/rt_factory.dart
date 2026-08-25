@@ -458,45 +458,43 @@ class ResultTableFactory {
       ],
     );
 
-    // Table 2: increase/decrease matrix from full_summary using first period
+    // Table 2: 농도변화율(-30~30%, 5% 단위) x 근/중/먼미래 매트릭스
     if (data.fullSummary.isEmpty) return ResultTableSet([table1]);
 
-    final firstPeriod = data.fullSummary
-        .firstWhere(
-            (e) => !(e['period']?.toString().contains('Baseline') == true),
-            orElse: () => data.fullSummary.first)['period']
-        ?.toString();
+    final forecastEntries = data.fullSummary
+        .where((e) => _isForecastPeriod(e['period']?.toString() ?? ''))
+        .toList();
+
+    final sortedPeriods = forecastEntries
+        .map((e) => e['period']!.toString())
+        .toSet()
+        .toList()
+      ..sort();
 
     final Map<int, Map<String, double?>> changePivot = {};
-    for (final e in data.fullSummary) {
-      if (e['period']?.toString() != firstPeriod) continue;
+    for (final e in forecastEntries) {
+      final period = e['period']!.toString();
       final ca = (e['change_ap'] as num?)?.toInt() ?? 0;
-      if (ca == 0) continue;
-      final absVal = ca.abs();
-      changePivot[absVal] ??= {};
       final proj = (e['proj_val'] as num?)?.toDouble();
-      if (ca > 0) {
-        changePivot[absVal]!['pos'] = proj;
-      } else {
-        changePivot[absVal]!['neg'] = proj;
-      }
+      changePivot[ca] ??= {};
+      changePivot[ca]![period] = proj;
     }
 
-    final sortedAbs = changePivot.keys.toList()..sort();
-    final periodLabel =
-        firstPeriod != null ? _periodLabelLine(firstPeriod) : '';
+    final sortedChangeAps = changePivot.keys.toList()..sort();
 
     final table2 = ResultTableModel(
       headers: [
-        RtCell(periodLabel, bold: true),
-        const RtCell('농도 증가', bold: true),
-        const RtCell('농도 감소', bold: true),
+        const RtCell('농도변화율', bold: true),
+        ...sortedPeriods.map((p) => RtCell(_periodLabelShort(p), bold: true)),
       ],
-      rows: sortedAbs.map((abs) {
+      rows: sortedChangeAps.map((ca) {
+        final sign = ca > 0 ? '+' : '';
+        final isBaseline = ca == 0;
         return <RtCell>[
-          RtCell('$abs%', bold: true),
-          RtCell(_fmtByMode(changePivot[abs]?['pos'], mode)),
-          RtCell(_fmtByMode(changePivot[abs]?['neg'], mode)),
+          RtCell('$sign$ca%', bold: true),
+          ...sortedPeriods.map((p) => RtCell(
+              _fmtByMode(changePivot[ca]?[p], mode),
+              bold: isBaseline)),
         ];
       }).toList(),
     );
@@ -689,6 +687,13 @@ class ResultTableFactory {
     if (period.contains('2031-2040')) return '근미래(2031-2040)';
     if (period.contains('2041-2060')) return '중미래(2041-2060)';
     if (period.contains('2081-2100')) return '먼미래(2081-2100)';
+    return period;
+  }
+
+  static String _periodLabelShort(String period) {
+    if (period.contains('2031-2040')) return '근미래';
+    if (period.contains('2041-2060')) return '중미래';
+    if (period.contains('2081-2100')) return '먼미래';
     return period;
   }
 
