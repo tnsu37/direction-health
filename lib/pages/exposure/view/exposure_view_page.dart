@@ -11,33 +11,32 @@ import '../widget/time_series.dart';
 class ExposureViewPage extends GetView<ExposureController> {
   const ExposureViewPage({super.key});
 
+  bool get _isBig => Common.bigSize.value;
+
   @override
   Widget build(BuildContext context) {
     return Row(
       children: [
-        SizedBox(
-          width: Common.bigSize.value ? 638 : 450,
-          child: Obx(() => GlobalMap(
-                mapData: controller.result.value.mapData,
-                sido: controller.fetchedSido,
-                label: MainController.to.selectedSubLabel,
-                title: controller.mapTitle,
-                unit: Common.unit(MainController.to.selectedSubId.value),
-                highlightSggName:
-                    controller.fetchedRequest['sgg_']?.toString(),
-              )),
-        ),
-        const SizedBox(width: 20),
+        Obx(() => GlobalMap(
+              width: _isBig ? 638 : 380,
+              mapData: controller.result.value.mapData,
+              sido: controller.fetchedSido,
+              label: MainController.to.selectedSubLabel,
+              title: controller.mapTitle,
+              unit: Common.unit(MainController.to.selectedSubId.value),
+              highlightSggName: controller.fetchedRequest['sgg_']?.toString(),
+            )),
+        SizedBox(width: _isBig ? 80 : 40),
         Column(
           children: [
             SizedBox(
-              width: Common.bigSize.value ? 770 : 600,
-              height: 330,
+              width: _isBig ? 800 : 650,
+              height: 320,
               child: Obx(() => TimeSeries(
                   timeseriesData: controller.result.value.timeseriesData,
                   mode: controller.fetchedRequest['mode']?.toString() ?? '')),
             ),
-            const SizedBox(height: 15),
+            const SizedBox(height: 50),
             Obx(() {
               final result = controller.result.value;
 

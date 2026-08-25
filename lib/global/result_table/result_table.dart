@@ -3,35 +3,60 @@ import 'package:flutter/material.dart';
 import 'rt_model.dart';
 
 class ResultTable extends StatelessWidget {
-  const ResultTable({super.key, required this.tableSet, this.headerH});
+  const ResultTable({
+    super.key,
+    required this.tableSet,
+    this.headerH,
+  });
 
   final ResultTableSet tableSet;
   final double? headerH;
 
   static const Color _headerBg = Color(0xFF1F3B68);
   static const Color _borderColor = Color(0xFFCCCCCC);
-  static final double _labelColW = Common.bigSize.value ? 118 : 80;
-  static final double _dataColW = Common.bigSize.value ? 95 : 65;
-  static const double _rowH = 35;
+
+  bool get _isBig => Common.bigSize.value;
+
+  double get _labelColW => _isBig ? 118 : 90;
+  double get _dataColW => _isBig ? 95 : 72;
+
+  double get _rowH => _isBig ? 35 : 32;
+
+  double get _fontSize => _isBig ? 13 : 11;
+
+  double get _horizontalPadding => _isBig ? 8 : 4;
+  double get _verticalPadding => _isBig ? 4 : 2;
 
   @override
   Widget build(BuildContext context) {
     final visibleTables = tableSet.tables.where((t) => !t.isEmpty).toList();
-    if (visibleTables.isEmpty) return const SizedBox.shrink();
+
+    if (visibleTables.isEmpty) {
+      return const SizedBox.shrink();
+    }
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: visibleTables.indexed.map((entry) {
         final (i, model) = entry;
+
         return Padding(
-          padding: EdgeInsets.only(top: i == 0 ? 0 : 16),
+          padding: EdgeInsets.only(
+            top: i == 0 ? 0 : (_isBig ? 16 : 10),
+          ),
           child: SingleChildScrollView(
             scrollDirection: Axis.horizontal,
             child: Container(
               decoration: const BoxDecoration(
                 border: Border(
-                  left: BorderSide(color: _borderColor, width: 0.5),
-                  top: BorderSide(color: _borderColor, width: 0.5),
+                  left: BorderSide(
+                    color: _borderColor,
+                    width: 0.5,
+                  ),
+                  top: BorderSide(
+                    color: _borderColor,
+                    width: 0.5,
+                  ),
                 ),
               ),
               child: Column(
@@ -39,8 +64,16 @@ class ResultTable extends StatelessWidget {
                 children: [
                   if (model.groupHeaders != null)
                     _buildGroupRow(model.groupHeaders!),
-                  _buildRow(model.headers, isHeader: true),
-                  ...model.rows.map((row) => _buildRow(row, isHeader: false)),
+                  _buildRow(
+                    model.headers,
+                    isHeader: true,
+                  ),
+                  ...model.rows.map(
+                    (row) => _buildRow(
+                      row,
+                      isHeader: false,
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -55,10 +88,12 @@ class ResultTable extends StatelessWidget {
       children: groups.asMap().entries.map((entry) {
         final i = entry.key;
         final g = entry.value;
-        final w = i == 0 ? _labelColW * g.span : _dataColW * g.span;
+
+        final width = i == 0 ? _labelColW * g.span : _dataColW * g.span;
+
         return _cell(
           g.label,
-          width: w,
+          width: width,
           height: _rowH,
           isHeader: true,
           bold: true,
@@ -67,15 +102,20 @@ class ResultTable extends StatelessWidget {
     );
   }
 
-  Widget _buildRow(List<RtCell> cells, {required bool isHeader}) {
+  Widget _buildRow(
+    List<RtCell> cells, {
+    required bool isHeader,
+  }) {
     return Row(
       children: cells.asMap().entries.map((entry) {
         final i = entry.key;
         final cell = entry.value;
-        final w = i == 0 ? _labelColW : _dataColW;
+
+        final width = i == 0 ? _labelColW : _dataColW;
+
         return _cell(
           cell.text,
-          width: w,
+          width: width,
           height: isHeader ? headerH ?? _rowH : _rowH,
           isHeader: isHeader,
           bold: isHeader || cell.bold,
@@ -96,34 +136,36 @@ class ResultTable extends StatelessWidget {
     return Container(
       width: width,
       height: height,
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      padding: EdgeInsets.symmetric(
+        horizontal: _horizontalPadding,
+        vertical: _verticalPadding,
+      ),
       decoration: BoxDecoration(
         color: isHeader ? _headerBg : null,
         border: const Border(
-          right: BorderSide(color: _borderColor, width: 0.5),
-          bottom: BorderSide(color: _borderColor, width: 0.5),
+          right: BorderSide(
+            color: _borderColor,
+            width: 0.5,
+          ),
+          bottom: BorderSide(
+            color: _borderColor,
+            width: 0.5,
+          ),
         ),
       ),
       alignment: Alignment.center,
       child: Text(
         text,
         textAlign: TextAlign.center,
+        maxLines: 2,
+        overflow: TextOverflow.ellipsis,
         style: TextStyle(
-          fontSize: 13,
+          fontSize: _fontSize,
+          height: 1.15,
           color: isHeader ? Colors.white : (textColor ?? Colors.black87),
           fontWeight: bold ? FontWeight.bold : FontWeight.w400,
         ),
       ),
     );
-  }
-}
-
-// Convenience extension so callers can use (entry.key, entry.value) syntax
-extension<T> on Iterable<T> {
-  Iterable<(int, T)> get indexed sync* {
-    var i = 0;
-    for (final v in this) {
-      yield (i++, v);
-    }
   }
 }

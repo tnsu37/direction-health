@@ -26,6 +26,8 @@ class CommonStyle {
       const TextStyle(fontSize: 18, fontWeight: FontWeight.w400);
   static TextStyle textStyle16500 =
       const TextStyle(fontSize: 16, fontWeight: FontWeight.w500);
+  static TextStyle textStyle13600 =
+      const TextStyle(fontSize: 13, fontWeight: FontWeight.w600);
   static TextStyle textStyle11600 =
       const TextStyle(fontSize: 11, fontWeight: FontWeight.w600);
 

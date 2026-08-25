@@ -112,7 +112,7 @@ class GlobalMap extends StatefulWidget {
     this.label = '',
     this.title = '',
     this.unit = '',
-    this.height = 638,
+    this.width = 638,
     this.sido,
     this.highlightSggName,
     this.onDistrictTapped,
@@ -134,7 +134,7 @@ class GlobalMap extends StatefulWidget {
   /// 단위 (e.g. "°C", "μg/m³")
   final String unit;
 
-  final double height;
+  final double width;
 
   /// 특정 시도만 표시할 때 해당 시도명 전달 (null 또는 '전체' → 전국)
   final String? sido;
@@ -346,19 +346,19 @@ class _KoreaMapWidgetState extends State<GlobalMap> {
   Widget build(BuildContext context) {
     if (_loading) {
       return SizedBox(
-        height: widget.height,
+        width: widget.width,
         child: const Center(child: CircularProgressIndicator()),
       );
     }
     if (_error != null) {
       return SizedBox(
-        height: widget.height,
+        width: widget.width,
         child: Center(child: Text('지도 로드 오류: $_error')),
       );
     }
 
     return SizedBox(
-      height: widget.height,
+      width: widget.width,
       child: Column(
         children: [
           if (widget.title.isNotEmpty)

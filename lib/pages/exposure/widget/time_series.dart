@@ -1,4 +1,5 @@
 import 'package:boilerplate/common/api.dart';
+import 'package:boilerplate/common/common.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 
@@ -124,19 +125,17 @@ class TimeSeries extends StatelessWidget {
               sideTitles: SideTitles(showTitles: false),
             ),
             leftTitles: AxisTitles(
-              axisNameWidget: Text(
-                yTitle,
-                style: const TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600,
-                ),
+              axisNameSize: 30,
+              axisNameWidget: Padding(
+                padding: const EdgeInsets.only(bottom: 10),
+                child: Text(yTitle, style: CommonStyle.textStyle13600),
               ),
               sideTitles: SideTitles(
                 showTitles: true,
-                reservedSize: 45,
+                reservedSize: 35,
                 getTitlesWidget: (value, meta) => Text(
                   value.toStringAsFixed(_decimals),
-                  style: const TextStyle(fontSize: 10, color: Colors.black87),
+                  style: const TextStyle(fontSize: 10),
                 ),
               ),
             ),
@@ -144,13 +143,7 @@ class TimeSeries extends StatelessWidget {
               axisNameSize: 40,
               axisNameWidget: Padding(
                 padding: const EdgeInsets.only(top: 10),
-                child: Text(
-                  xTitle,
-                  style: const TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
+                child: Text(xTitle, style: CommonStyle.textStyle13600),
               ),
               sideTitles: SideTitles(
                 showTitles: true,
@@ -174,10 +167,7 @@ class TimeSeries extends StatelessWidget {
                     angle: -0.65,
                     child: Text(
                       _labelFor(xAxisLabelMode, entry),
-                      style: const TextStyle(
-                        fontSize: 11,
-                        color: Colors.black87,
-                      ),
+                      style: const TextStyle(fontSize: 10),
                     ),
                   );
                 },

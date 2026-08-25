@@ -23,9 +23,11 @@ class GreyText extends StatelessWidget {
                             ? CommonStyle.textStyle7D24700
                             : CommonStyle.textStyle7D13700),
                     WidgetSpan(
+                      alignment: PlaceholderAlignment.baseline,
+                      baseline: TextBaseline.alphabetic,
                       child: Text(
                         '2.5',
-                        textScaler: const TextScaler.linear(0.7),
+                        textScaler: const TextScaler.linear(0.5),
                         style: Common.bigSize.value
                             ? CommonStyle.textStyle7D24700
                             : CommonStyle.textStyle7D13700,
@@ -37,8 +39,10 @@ class GreyText extends StatelessWidget {
                             ? CommonStyle.textStyle7D24700
                             : CommonStyle.textStyle7D13700),
                     WidgetSpan(
+                      alignment: PlaceholderAlignment.baseline,
+                      baseline: TextBaseline.alphabetic,
                       child: Text('3',
-                          textScaler: const TextScaler.linear(0.7),
+                          textScaler: const TextScaler.linear(0.5),
                           style: Common.bigSize.value
                               ? CommonStyle.textStyle7D24700
                               : CommonStyle.textStyle7D13700),
