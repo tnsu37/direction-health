@@ -102,6 +102,8 @@ class CommonStyle {
       fontSize: 18, fontWeight: FontWeight.w400, color: CommonColor.fontBlack);
   static TextStyle textStyleFontBlack18600 = TextStyle(
       fontSize: 18, fontWeight: FontWeight.w600, color: CommonColor.fontBlack);
+  static TextStyle textStyleFontBlack14600 = TextStyle(
+      fontSize: 14, fontWeight: FontWeight.w600, color: CommonColor.fontBlack);
   static TextStyle textStyleFontBlack14500 = TextStyle(
       fontSize: 14, fontWeight: FontWeight.w500, color: CommonColor.fontBlack);
   static TextStyle textStyleFontBlack16400 = TextStyle(
@@ -140,16 +142,12 @@ class CommonStyle {
       fontWeight: FontWeight.w300,
       color: CommonColor.fontBlack,
       height: 1);
+  static TextStyle textStyleFontBlack13400 = TextStyle(
+      fontSize: 13, fontWeight: FontWeight.w400, color: CommonColor.fontBlack);
   static TextStyle textStyleFontBlack13300 = TextStyle(
-      fontSize: 13,
-      fontWeight: FontWeight.w300,
-      color: CommonColor.fontBlack,
-      height: 1);
+      fontSize: 13, fontWeight: FontWeight.w300, color: CommonColor.fontBlack);
   static TextStyle textStyleFontBlack12300 = TextStyle(
-      fontSize: 12,
-      fontWeight: FontWeight.w300,
-      color: CommonColor.fontBlack,
-      height: 1);
+      fontSize: 12, fontWeight: FontWeight.w300, color: CommonColor.fontBlack);
 
   ///-----------------------------grey--------------------------------
   static TextStyle textStyleGret22400 = TextStyle(

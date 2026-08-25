@@ -12,6 +12,7 @@ import '../../health_effects/view/health_effects_view_page.dart';
 import '../../scenario/view/scenario_view_page.dart';
 import '../../health_projection/view/health_projection_view_page.dart';
 import '../widget/side_nav_bar.dart';
+import '../widget/reference_notes.dart';
 
 class MainViewPage extends GetView<MainController> {
   const MainViewPage({super.key});
@@ -69,7 +70,7 @@ class MainViewPage extends GetView<MainController> {
                                       GlobalFilterBar(controller: controller),
                                       Padding(
                                         padding: const EdgeInsets.symmetric(
-                                            vertical: 30),
+                                            vertical: 40, horizontal: 3),
                                         child: pageWidgetList[controller
                                             .selectedMenu.value.index],
                                       ),
@@ -77,9 +78,9 @@ class MainViewPage extends GetView<MainController> {
                                         margin: const EdgeInsets.only(
                                             bottom: 50, left: 10, right: 10),
                                         padding: const EdgeInsets.symmetric(
-                                            vertical: 15, horizontal: 30),
+                                            vertical: 25, horizontal: 40),
                                         width:
-                                            Common.bigSize.value ? 1650 : 1100,
+                                            Common.bigSize.value ? 1870 : 1100,
                                         color: const Color(0xffF4F4F4),
                                         child: Column(
                                           crossAxisAlignment:
@@ -88,8 +89,10 @@ class MainViewPage extends GetView<MainController> {
                                             Text('참고사항',
                                                 style:
                                                     CommonStyle.textStyle16500),
-                                            const SizedBox(height: 10),
-                                            
+                                            const SizedBox(height: 18),
+                                            ReferenceNotes(
+                                                menu: controller
+                                                    .selectedMenu.value),
                                           ],
                                         ),
                                       ),
