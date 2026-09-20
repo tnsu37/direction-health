@@ -1,6 +1,7 @@
 import 'package:boilerplate/common/common.dart';
 import 'package:boilerplate/global/global_filter_bar.dart';
 import 'package:boilerplate/global/global_loading.dart';
+import 'package:boilerplate/global/global_ready.dart';
 import 'package:get/get.dart';
 import '../../../global/global_layout_widget.dart';
 import '../controller/main_controller.dart';
@@ -67,35 +68,45 @@ class MainViewPage extends GetView<MainController> {
                                     crossAxisAlignment:
                                         CrossAxisAlignment.start,
                                     children: [
-                                      GlobalFilterBar(controller: controller),
-                                      Padding(
-                                        padding: const EdgeInsets.symmetric(
-                                            vertical: 40, horizontal: 3),
-                                        child: pageWidgetList[controller
-                                            .selectedMenu.value.index],
-                                      ),
-                                      Container(
-                                        margin: const EdgeInsets.only(
-                                            bottom: 50, left: 10, right: 10),
-                                        padding: const EdgeInsets.symmetric(
-                                            vertical: 25, horizontal: 40),
-                                        width:
-                                            Common.bigSize.value ? 1870 : 1100,
-                                        color: const Color(0xffF4F4F4),
-                                        child: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            Text('참고사항',
-                                                style:
-                                                    CommonStyle.textStyle16500),
-                                            const SizedBox(height: 18),
-                                            ReferenceNotes(
-                                                menu: controller
-                                                    .selectedMenu.value),
-                                          ],
+                                      if (controller.filterConfig ==
+                                              FilterConfig
+                                                  .healthImpactWaterborne ||
+                                          controller.filterConfig ==
+                                              FilterConfig
+                                                  .futureHealthWaterborne)
+                                        const GlobalReady()
+                                      else ...[
+                                        GlobalFilterBar(controller: controller),
+                                        Padding(
+                                          padding: const EdgeInsets.symmetric(
+                                              vertical: 40),
+                                          child: pageWidgetList[controller
+                                              .selectedMenu.value.index],
                                         ),
-                                      ),
+                                        Container(
+                                          margin: const EdgeInsets.only(
+                                              bottom: 50, left: 10, right: 10),
+                                          padding: const EdgeInsets.symmetric(
+                                              vertical: 25, horizontal: 40),
+                                          width: Common.bigSize.value
+                                              ? 1870
+                                              : 1100,
+                                          color: const Color(0xffF4F4F4),
+                                          child: Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              Text('참고사항',
+                                                  style: CommonStyle
+                                                      .textStyle16500),
+                                              const SizedBox(height: 18),
+                                              ReferenceNotes(
+                                                  menu: controller
+                                                      .selectedMenu.value),
+                                            ],
+                                          ),
+                                        ),
+                                      ],
                                     ],
                                   ))),
                       ),

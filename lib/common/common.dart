@@ -38,6 +38,8 @@ class CommonStyle {
       fontSize: 13, fontWeight: FontWeight.w700, color: CommonColor.font7D7D7D);
 
   ///---------------------------fontAAAAAA------------------------------
+  static TextStyle textStyleAA30700 = TextStyle(
+      fontSize: 30, fontWeight: FontWeight.w700, color: CommonColor.fontAAAAAA);
   static TextStyle textStyleAA20400 = TextStyle(
       fontSize: 20, fontWeight: FontWeight.w400, color: CommonColor.fontAAAAAA);
   static TextStyle textStyleAA16400 = TextStyle(

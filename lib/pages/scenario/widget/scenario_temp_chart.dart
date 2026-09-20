@@ -201,7 +201,7 @@ class ScenarioTempChart extends StatelessWidget {
               VerticalRangeAnnotation(
                 x1: gapX1,
                 x2: gapX2 + 1,
-                color: Colors.grey.withOpacity(0.25),
+                color: Colors.grey.withOpacity(0.1),
               ),
             ],
           )

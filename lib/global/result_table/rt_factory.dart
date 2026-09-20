@@ -343,7 +343,7 @@ class ResultTableFactory {
     ];
 
     final headers = <RtCell>[
-      const RtCell('GCM', bold: true),
+      const RtCell('기후모형', bold: true),
       ...sortedPeriods.expand((_) => [
             const RtCell('평균', bold: true),
             const RtCell('표준편차', bold: true),
@@ -492,9 +492,8 @@ class ResultTableFactory {
         final isBaseline = ca == 0;
         return <RtCell>[
           RtCell('$sign$ca%', bold: true),
-          ...sortedPeriods.map((p) => RtCell(
-              _fmtByMode(changePivot[ca]?[p], mode),
-              bold: isBaseline)),
+          ...sortedPeriods.map((p) =>
+              RtCell(_fmtByMode(changePivot[ca]?[p], mode), bold: isBaseline)),
         ];
       }).toList(),
     );
@@ -570,7 +569,7 @@ class ResultTableFactory {
       });
 
     final headers = <RtCell>[
-      const RtCell('GCM', bold: true),
+      const RtCell('기후모형', bold: true),
       ...sortedPeriods.map((p) => RtCell(_periodLabel(p), bold: true)),
     ];
 
