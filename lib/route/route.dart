@@ -1,4 +1,6 @@
+import 'package:boilerplate/pages/main/controller/main_controller.dart';
 import 'package:get/get.dart';
+import 'package:flutter/material.dart';
 
 import '../pages/splash/bindings/splash_binding.dart';
 import '../pages/splash/view/splash_view_page.dart';
@@ -15,14 +17,14 @@ class GetXRouter {
   static final route = [
     GetPage(
         name: '/',
-        page: () => const SplashViewPage(),
-        binding: SplashBinding(),
-        popGesture: true),
-    GetPage(
-        name: '/onboarding',
         page: () => const OnboardingViewPage(),
         binding: OnboardingBinding(),
         popGesture: true),
+    // GetPage(
+    //     name: '/onboarding',
+    //     page: () => const OnboardingViewPage(),
+    //     binding: OnboardingBinding(),
+    //     popGesture: true),
     GetPage(
         name: '/main',
         page: () => const MainViewPage(),

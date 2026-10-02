@@ -13,7 +13,7 @@ class ApiService {
   /// (기존 코드 값: https://team-motive.com)
   static const String baseUrl = String.fromEnvironment(
     'API_BASE_URL',
-    defaultValue: 'http://13.125.116.197:8000',
+    defaultValue: 'https://api.direction-health.kr',
   );
 
   static const Duration _timeout = Duration(seconds: 120);

@@ -1,3 +1,5 @@
+import 'package:boilerplate/pages/main/bindings/main_binding.dart';
+import 'package:boilerplate/pages/main/view/main_view_page.dart';
 import 'package:get/get.dart';
 
 class OnboardingController extends GetxController {

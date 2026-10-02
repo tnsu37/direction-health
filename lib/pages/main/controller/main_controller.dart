@@ -83,9 +83,6 @@ class MainController extends GetxController
   RxString filterAdaptation = '없음'.obs;
   RxInt filterConcChange = 0.obs;
 
-  ///선택한 시도의 하위 시군구 목록
-  RxList<String> sggList = ['전체'].obs;
-
   final List<String> defaultClimateModels = ['앙상블', 'WRF'];
 
   // ── Loading / data ──
@@ -186,13 +183,15 @@ class MainController extends GetxController
   }
 
   List<String> get sgg {
-    sggList.clear();
     if (selectedSubId.value.contains('malaria')) {
-      sggList.addAll(Common.sgg2[filterSido.value]!);
-    } else {
-      sggList.addAll(Common.sgg1[filterSido.value]!);
+      return List<String>.from(
+        Common.sgg2[filterSido.value] ?? const ['전체'],
+      );
     }
-    return sggList.value;
+
+    return List<String>.from(
+      Common.sgg1[filterSido.value] ?? const ['전체'],
+    );
   }
 
   String get filterRcm => filterClimateModels.join(', ');
@@ -200,6 +199,21 @@ class MainController extends GetxController
   // ──────────────────────────────────────────
   //  Navigation actions
   // ──────────────────────────────────────────
+
+  void _setInitialMenu(MainMenu menu) {
+    selectedMenu.value = menu;
+
+    final items = Common.navTree[menu]!;
+    final first = items.first;
+
+    if (first.children.isNotEmpty) {
+      expandedParentId.value = [first.id];
+      selectedSubId.value = first.children.first.id;
+    } else {
+      expandedParentId.value = [''];
+      selectedSubId.value = first.id;
+    }
+  }
 
   void selectMenu(MainMenu menu) {
     selectedMenu.value = menu;
@@ -313,28 +327,45 @@ class MainController extends GetxController
 
   @override
   void onInit() {
+    super.onInit();
     animationController = AnimationController(
       vsync: this,
       duration: const Duration(seconds: 3),
     );
 
     animationController.forward();
-
     if (Get.arguments != null) {
-      int index = Get.arguments;
+      final index = Get.arguments;
+
+      print('===== argument received: $index =====');
+
       switch (index) {
         case 0:
-          selectMenu(MainMenu.exposure);
+          _setInitialMenu(MainMenu.exposure);
+          break;
+
         case 1:
-          selectMenu(MainMenu.healthImpact);
+          _setInitialMenu(MainMenu.healthImpact);
+          break;
+
         case 2:
-          selectMenu(MainMenu.climateScenario);
+          _setInitialMenu(MainMenu.climateScenario);
+          break;
       }
     } else {
-      // 최초 진입(기본 랜딩 탭)도 디폴트 값으로 자동 조회
-      search();
+      print('===== Get.arguments IS NULL =====');
     }
+  }
 
-    super.onInit();
+  @override
+  void onReady() {
+    super.onReady();
+    search();
+  }
+
+  @override
+  void onClose() {
+    animationController.dispose();
+    super.onClose();
   }
 }
