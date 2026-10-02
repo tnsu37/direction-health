@@ -1,7 +1,6 @@
 import 'package:boilerplate/common/common.dart';
 import 'package:boilerplate/global/result_table/result_table.dart';
 import 'package:boilerplate/global/result_table/rt_factory.dart';
-import 'package:boilerplate/pages/main/controller/main_controller.dart';
 import 'package:get/get.dart';
 import 'package:flutter/material.dart';
 import '../controller/scenario_controller.dart';
@@ -21,7 +20,7 @@ class ScenarioViewPage extends GetView<ScenarioController> {
       final mode = request['mode']?.toString() ?? '';
       final isAP = mode == 'PM2.5' || mode == 'O3';
       final chartWidth = Common.bigSize.value ? 750.0 : 520.0;
-      final chartTitle = _buildChartTitle(request);
+      final chartTitle = controller.chartTitle;
 
       final tableSet = ResultTableFactory.fromFutureScenario(
         request: request,
@@ -91,32 +90,6 @@ class ScenarioViewPage extends GetView<ScenarioController> {
         );
       }
     });
-  }
-
-  String _buildChartTitle(Map<String, dynamic> request) {
-    final mc = MainController.to;
-    final sido = request['sido_']?.toString() ?? mc.filterSido.value;
-    final region = (sido == '전체' || sido.isEmpty) ? '전국' : sido;
-    final mode = request['mode']?.toString() ?? '';
-    final isAP = mode == 'PM2.5' || mode == 'O3';
-
-    if (isAP) {
-      return '$mode 증감 수준별 미래 평균농도';
-    } else {
-      final sspRaw = request['ssp']?.toString() ?? '';
-      final sspLabel = _sspLabel(sspRaw);
-      return '$region $sspLabel 시나리오';
-    }
-  }
-
-  String _sspLabel(String ssp) {
-    const table = {
-      'SSP126': 'SSP1-2.6',
-      'SSP245': 'SSP2-4.5',
-      'SSP370': 'SSP3-7.0',
-      'SSP585': 'SSP5-8.5',
-    };
-    return table[ssp] ?? ssp;
   }
 
   List<String> _parseGcms(dynamic raw) {

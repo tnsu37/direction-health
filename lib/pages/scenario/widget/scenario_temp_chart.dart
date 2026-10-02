@@ -81,9 +81,8 @@ class ScenarioTempChart extends StatelessWidget {
         return ai.compareTo(bi);
       });
 
-    // Line bars
-// 2060~2080 구간은 그래프를 표시하지 않기 위해
-// 2059년 이전 / 2081년 이후를 서로 다른 bar로 분리
+    // Line bars — 전체 기간(2060~2080년 포함)을 하나의 선으로 이어서 그린다.
+    // 해당 구간은 회색 음영 + 경계 점선으로만 구분 표시한다.
     final List<LineChartBarData> bars = [];
     final List<String> barGcmNames = [];
 
@@ -97,37 +96,20 @@ class ScenarioTempChart extends StatelessWidget {
       final points = byGcm[gcm]!.toList()
         ..sort((a, b) => a.year.compareTo(b.year));
 
-      // 2060~2080 제외
-      final beforeGap = points
-          .where((p) => p.year < 2061)
-          .map((p) => FlSpot(yearToX[p.year]!, p.meanVal))
-          .toList();
+      final spots =
+          points.map((p) => FlSpot(yearToX[p.year]!, p.meanVal)).toList();
 
-      final afterGap = points
-          .where((p) => p.year > 2080)
-          .map((p) => FlSpot(yearToX[p.year]!, p.meanVal))
-          .toList();
+      if (spots.isEmpty) continue;
 
-      LineChartBarData makeBar(List<FlSpot> spots) {
-        return LineChartBarData(
-          spots: spots,
-          isCurved: false,
-          color: color,
-          barWidth: isEnsemble ? 2.5 : 1.5,
-          dotData: const FlDotData(show: false),
-          belowBarData: BarAreaData(show: false),
-        );
-      }
-
-      if (beforeGap.isNotEmpty) {
-        bars.add(makeBar(beforeGap));
-        barGcmNames.add(gcm);
-      }
-
-      if (afterGap.isNotEmpty) {
-        bars.add(makeBar(afterGap));
-        barGcmNames.add(gcm);
-      }
+      bars.add(LineChartBarData(
+        spots: spots,
+        isCurved: false,
+        color: color,
+        barWidth: isEnsemble ? 2.5 : 1.5,
+        dotData: const FlDotData(show: false),
+        belowBarData: BarAreaData(show: false),
+      ));
+      barGcmNames.add(gcm);
     }
 
     // 연도(정수) → x좌표. 데이터에 정확히 없는 연도는 인접한 두 연도 사이를 보간.
@@ -185,6 +167,8 @@ class ScenarioTempChart extends StatelessWidget {
     final verticalLines = [
       _periodDivider(2031),
       _periodDivider(2041),
+      // 모델링 공백 구간(2061~2080년) 경계선
+      _periodDivider(2060),
       _periodDivider(2081),
       _periodMidLabel(_xMid(2031, 2040), '근미래'),
       _periodMidLabel(_xMid(2041, 2060), '중미래'),

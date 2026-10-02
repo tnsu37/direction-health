@@ -304,10 +304,26 @@ class _KoreaMapWidgetState extends State<GlobalMap> {
         focusBounds = LatLngBounds.fromPoints(allPoints);
       }
 
+      // 필터에서 특정 시군구를 선택해 조회한 경우, 지도를 직접 클릭한 것처럼
+      // 해당 지역의 값 정보 칩을 자동으로 표시한다.
+      _PolygonFeature? autoHovered;
+      final highlightName = widget.highlightSggName;
+      if (highlightName != null &&
+          highlightName.isNotEmpty &&
+          highlightName != '전체') {
+        for (final f in features) {
+          if (f.sggName.endsWith(highlightName)) {
+            autoHovered = f;
+            break;
+          }
+        }
+      }
+
       if (mounted) {
         setState(() {
           _features = features;
           _focusBounds = focusBounds;
+          _hovered = autoHovered;
           _loading = false;
         });
 
