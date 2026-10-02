@@ -362,6 +362,11 @@ class Common {
     return '°C';
   }
 
+  /// 시각화 title 등에 표시할 물질명의 숫자를 아래첨자로 변환.
+  /// 'PM2.5' → 'PM₂.₅', 'O3' → 'O₃'
+  static String subscriptPollutant(String text) =>
+      text.replaceAll('PM2.5', 'PM₂.₅').replaceAll('O3', 'O₃');
+
   static Map<String, List<String>> sgg1 = {
     '전체': ['전체'],
     '서울특별시': [

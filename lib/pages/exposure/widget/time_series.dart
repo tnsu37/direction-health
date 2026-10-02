@@ -15,7 +15,6 @@ class TimeSeries extends StatelessWidget {
   final String yTitle;
   final String xTitle;
   final String mode;
-  final String chartTitle;
 
   const TimeSeries({
     super.key,
@@ -23,7 +22,6 @@ class TimeSeries extends StatelessWidget {
     this.yTitle = '평균온도(℃)',
     this.xTitle = '날짜',
     this.mode = '',
-    this.chartTitle = '',
   });
 
   int get _decimals => mode == 'O3' ? 2 : 1;
@@ -110,18 +108,10 @@ class TimeSeries extends StatelessWidget {
 
     final xAxisLabelMode = _detectXAxisLabelMode();
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        if (chartTitle.isNotEmpty)
-          Padding(
-            padding: const EdgeInsets.only(bottom: 12),
-            child: Text(chartTitle, style: CommonStyle.textStyleFontBlack18600),
-          ),
-        SizedBox(
-          height: 420,
-          child: LineChart(
-            LineChartData(
+    return SizedBox(
+      height: 420,
+      child: LineChart(
+        LineChartData(
           minX: 0,
           maxX: (spots.length - 1).toDouble(),
           minY: minY,
@@ -245,9 +235,7 @@ class TimeSeries extends StatelessWidget {
           ],
           extraLinesData: const ExtraLinesData(),
         ),
-          ),
-        ),
-      ],
+      ),
     );
   }
 }

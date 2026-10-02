@@ -92,7 +92,7 @@ class ScenarioController extends GetxController {
     if (isTemp) {
       return '$region ${_sspLabel(ssp)} 시나리오';
     } else {
-      return '$region $mode 증감 수준별 미래 평균농도';
+      return '$region ${Common.subscriptPollutant(mode)} 증감 수준별 미래 평균농도';
     }
   }
 

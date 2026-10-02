@@ -949,8 +949,6 @@ class _MultiDropdownItemState extends State<_MultiDropdownItem> {
                       .whereType<String>()
                       .toList();
 
-                  print('선택: $selected');
-
                   if (selected.isEmpty) {
                     widget.onChanged(_defaultValues);
                     return;

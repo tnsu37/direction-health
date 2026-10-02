@@ -1,9 +1,4 @@
-import 'package:boilerplate/pages/main/controller/main_controller.dart';
 import 'package:get/get.dart';
-import 'package:flutter/material.dart';
-
-import '../pages/splash/bindings/splash_binding.dart';
-import '../pages/splash/view/splash_view_page.dart';
 import '../pages/onboarding/bindings/onboarding_binding.dart';
 import '../pages/onboarding/view/onboarding_view_page.dart';
 import '../pages/main/bindings/main_binding.dart';
@@ -20,11 +15,6 @@ class GetXRouter {
         page: () => const OnboardingViewPage(),
         binding: OnboardingBinding(),
         popGesture: true),
-    // GetPage(
-    //     name: '/onboarding',
-    //     page: () => const OnboardingViewPage(),
-    //     binding: OnboardingBinding(),
-    //     popGesture: true),
     GetPage(
         name: '/main',
         page: () => const MainViewPage(),

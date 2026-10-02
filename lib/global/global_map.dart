@@ -419,7 +419,7 @@ class _KoreaMapWidgetState extends State<GlobalMap> {
           mapController: _mapController,
           options: MapOptions(
             initialCenter: const LatLng(35.9, 127.8),
-            initialZoom: 6.8,
+            initialZoom: 6.5,
             minZoom: 5.5,
             maxZoom: 12.0,
             backgroundColor: Colors.white,
@@ -562,8 +562,8 @@ class _LegendBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final minLabel = scale.min.toStringAsFixed(1);
-    final maxLabel = scale.max.toStringAsFixed(1);
+    final minLabel = scale.min.toStringAsFixed(2);
+    final maxLabel = scale.max.toStringAsFixed(2);
 
     return SizedBox(
       width: 80,
@@ -611,7 +611,7 @@ class _LegendBar extends StatelessWidget {
                             140 -
                         6,
                     child: Text(
-                      scale.center!.toStringAsFixed(1),
+                      scale.center!.toStringAsFixed(2),
                       style: const TextStyle(
                           fontSize: 9, color: Color(0xFF444444)),
                     ),

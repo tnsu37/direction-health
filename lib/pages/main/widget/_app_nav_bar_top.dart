@@ -2,6 +2,8 @@ import 'package:boilerplate/common/common.dart';
 import 'package:boilerplate/pages/main/controller/main_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:get/get.dart';
+import 'package:get/instance_manager.dart';
 
 class AppNavBarTop extends StatelessWidget {
   const AppNavBarTop({
@@ -29,36 +31,41 @@ class AppNavBarTop extends StatelessWidget {
       width: double.infinity,
       child: Row(
         children: [
-          Container(
-            width: logoWidth,
-            alignment: Alignment.center,
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                SvgPicture.asset(
-                  'assets/logo/direction.svg',
-                  height: Common.bigSize.value ? 45 : 35,
-                ),
-                const SizedBox(width: 15),
-                Text.rich(
-                  TextSpan(
-                    children: [
-                      TextSpan(
-                        text: 'DIRECTION ',
-                        style: Common.bigSize.value
-                            ? CommonStyle.textStyleFontBlack30700
-                            : CommonStyle.textStyleFontBlack24700,
-                      ),
-                      TextSpan(
-                        text: 'Health',
-                        style: Common.bigSize.value
-                            ? CommonStyle.textStyleFontBlack30500
-                            : CommonStyle.textStyleFontBlack24500,
-                      ),
-                    ],
+          GestureDetector(
+            onTap: () {
+              Get.toNamed('/');
+            },
+            child: Container(
+              width: logoWidth,
+              alignment: Alignment.center,
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  SvgPicture.asset(
+                    'assets/logo/direction.svg',
+                    height: Common.bigSize.value ? 45 : 35,
                   ),
-                ),
-              ],
+                  const SizedBox(width: 15),
+                  Text.rich(
+                    TextSpan(
+                      children: [
+                        TextSpan(
+                          text: 'DIRECTION ',
+                          style: Common.bigSize.value
+                              ? CommonStyle.textStyleFontBlack30700
+                              : CommonStyle.textStyleFontBlack24700,
+                        ),
+                        TextSpan(
+                          text: 'Health',
+                          style: Common.bigSize.value
+                              ? CommonStyle.textStyleFontBlack30500
+                              : CommonStyle.textStyleFontBlack24500,
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
           SizedBox(

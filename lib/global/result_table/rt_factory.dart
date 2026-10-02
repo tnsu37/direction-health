@@ -306,6 +306,8 @@ class ResultTableFactory {
   }) {
     if (data.periodSummary.isEmpty) return ResultTableSet([]);
 
+    final targetPeriod = request['target_period']?.toString() ?? '전체';
+
     // Pivot: period → gcm → {mean, sd}
     final Map<String, Map<String, Map<String, double?>>> pivot = {};
     final Map<String, int> periodOrder = {};
@@ -322,9 +324,10 @@ class ResultTableFactory {
       pivot[p.gcm]![p.period] = {'mean': p.meanVal, 'sd': p.sdVal};
     }
 
-    // 기준 기간(Baseline) 열은 표에서 제외
+    // 기준 기간(Baseline) 열은 표에서 제외, 특정 기간을 선택한 경우 해당 기간만 표시
     final sortedPeriods = periodOrder.keys
         .where((p) => !p.contains('Baseline'))
+        .where((p) => targetPeriod == '전체' || p.contains(targetPeriod))
         .toList()
       ..sort((a, b) => a.compareTo(b));
 

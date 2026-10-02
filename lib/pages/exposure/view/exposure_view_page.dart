@@ -36,7 +36,6 @@ class ExposureViewPage extends GetView<ExposureController> {
                     mode: controller.fetchedRequest['mode']?.toString() ?? '',
                     yTitle:
                         '${MainController.to.selectedSubLabel} (${Common.unit(MainController.to.selectedSubId.value)})',
-                    chartTitle: controller.mapTitle,
                   )),
             ),
             const SizedBox(height: 50),

@@ -81,7 +81,7 @@ class HealthProjectionController extends GetxController {
     ].join(' ');
     final region = regionPart.isNotEmpty ? regionPart : '전국';
     final isDeath = mode == '여름철 온도' || mode == 'PM2.5' || mode == 'O3';
-    return '$region $mode ${isDeath ? '초과사망자수' : '초과발생건수'}';
+    return '$region ${Common.subscriptPollutant(mode)} ${isDeath ? '초과사망자수' : '초과발생건수'}';
   }
 
   @override

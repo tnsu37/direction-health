@@ -83,7 +83,7 @@ class HealthEffectsController extends GetxController {
       if (sido != '전체') sido,
       if (sgg != '전체') sgg,
     ].join(' ');
-    return '$mode (${regionPart.isNotEmpty ? regionPart : '전국'})';
+    return '${Common.subscriptPollutant(mode)} (${regionPart.isNotEmpty ? regionPart : '전국'})';
   }
 
   @override

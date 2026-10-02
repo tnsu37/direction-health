@@ -179,9 +179,13 @@ class HealthProjectionAnChart extends StatelessWidget {
                 rightTitles:
                     const AxisTitles(sideTitles: SideTitles(showTitles: false)),
                 leftTitles: AxisTitles(
-                  axisNameWidget: Text(_unitLabel,
-                      style: const TextStyle(
-                          fontSize: 12, fontWeight: FontWeight.w600)),
+                  axisNameSize: 30,
+                  axisNameWidget: Padding(
+                    padding: const EdgeInsets.only(bottom: 10),
+                    child: Text(_unitLabel,
+                        style: const TextStyle(
+                            fontSize: 12, fontWeight: FontWeight.w600)),
+                  ),
                   sideTitles: SideTitles(
                     showTitles: true,
                     reservedSize: 52,

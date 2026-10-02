@@ -36,9 +36,6 @@ class ApiService {
       throw ApiException('NETWORK_ERROR', '서버에 연결할 수 없습니다.', cause: e);
     }
 
-    print('===== RAW RESPONSE =====');
-    print(utf8.decode(res.bodyBytes));
-
     final dynamic decoded =
         res.body.isEmpty ? const {} : json.decode(utf8.decode(res.bodyBytes));
     final map = decoded is Map<String, dynamic> ? decoded : <String, dynamic>{};

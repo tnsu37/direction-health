@@ -21,6 +21,7 @@ class ScenarioViewPage extends GetView<ScenarioController> {
       final isAP = mode == 'PM2.5' || mode == 'O3';
       final chartWidth = Common.bigSize.value ? 750.0 : 520.0;
       final chartTitle = controller.chartTitle;
+      final targetPeriod = (request['target_period'] ?? '전체').toString();
 
       final tableSet = ResultTableFactory.fromFutureScenario(
         request: request,
@@ -28,7 +29,6 @@ class ScenarioViewPage extends GetView<ScenarioController> {
       );
 
       if (isAP) {
-        final targetPeriod = (request['target_period'] ?? '전체').toString();
         final changeApRaw = request['change_ap_'] ?? request['change_ap'];
         final changeAp = (changeApRaw is num) ? changeApRaw.toInt() : 0;
         // 기간·농도변화를 아직 좁혀 선택하지 않은 디폴트/지역선택 상태 → 시계열 라인차트
@@ -82,6 +82,7 @@ class ScenarioViewPage extends GetView<ScenarioController> {
                 mode: mode,
                 chartTitle: chartTitle,
                 selectedGcms: _parseGcms(request['gcm']),
+                targetPeriod: targetPeriod,
               ),
             ),
             const SizedBox(width: 50),

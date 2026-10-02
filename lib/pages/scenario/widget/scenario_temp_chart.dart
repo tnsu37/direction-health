@@ -10,12 +10,23 @@ class ScenarioTempChart extends StatelessWidget {
     required this.mode,
     required this.chartTitle,
     required this.selectedGcms,
+    this.targetPeriod = '전체',
   });
 
   final FutureExposureResponse data;
   final String mode;
   final String chartTitle;
   final List<String> selectedGcms;
+
+  /// ApiMap.period() 결과값. '전체'가 아니면 해당 기간(예: '2031-2040')의 값만 표시.
+  final String targetPeriod;
+
+  // '2031-2040' → (2031, 2040), '전체' → null
+  (int, int)? get _periodRange {
+    final m = RegExp(r'(\d{4})-(\d{4})').firstMatch(targetPeriod);
+    if (m == null) return null;
+    return (int.parse(m.group(1)!), int.parse(m.group(2)!));
+  }
 
   static const Map<String, Color> _gcmColors = {
     'Ensemble': Color(0xFF243B64),
@@ -37,7 +48,12 @@ class ScenarioTempChart extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final trend = data.yearlyTrend;
+    final range = _periodRange;
+    final trend = range == null
+        ? data.yearlyTrend
+        : data.yearlyTrend
+            .where((p) => p.year >= range.$1 && p.year <= range.$2)
+            .toList();
     if (trend.isEmpty) return const SizedBox.shrink();
 
     // Group by GCM
@@ -164,20 +180,26 @@ class ScenarioTempChart extends StatelessWidget {
       );
     }
 
-    final verticalLines = [
-      _periodDivider(2031),
-      _periodDivider(2041),
-      // 모델링 공백 구간(2061~2080년) 경계선
-      _periodDivider(2060),
-      _periodDivider(2081),
-      _periodMidLabel(_xMid(2031, 2040), '근미래'),
-      _periodMidLabel(_xMid(2041, 2060), '중미래'),
-      _periodMidLabel(_xMid(2081, 2100), '먼미래'),
-    ];
+    // 특정 기간을 선택한 상태에서는 해당 기간만 보여주므로
+    // 근/중/먼미래 구분선·공백구간 음영은 표시하지 않는다.
+    final showFullRangeOverlays = range == null;
+
+    final verticalLines = !showFullRangeOverlays
+        ? const <VerticalLine>[]
+        : [
+            _periodDivider(2031),
+            _periodDivider(2041),
+            // 모델링 공백 구간(2061~2080년) 경계선
+            _periodDivider(2060),
+            _periodDivider(2081),
+            _periodMidLabel(_xMid(2031, 2040), '근미래'),
+            _periodMidLabel(_xMid(2041, 2060), '중미래'),
+            _periodMidLabel(_xMid(2081, 2100), '먼미래'),
+          ];
 
     // 2060~2080년(모델링 공백 구간) 회색 처리
-    final gapX1 = _xForYear(2060);
-    final gapX2 = _xForYear(2080);
+    final gapX1 = showFullRangeOverlays ? _xForYear(2060) : null;
+    final gapX2 = showFullRangeOverlays ? _xForYear(2080) : null;
 
     final rangeAnnotations = (gapX1 != null && gapX2 != null)
         ? RangeAnnotations(
@@ -252,7 +274,10 @@ class ScenarioTempChart extends StatelessWidget {
                       if (idx < 0 || idx >= years.length)
                         return const SizedBox.shrink();
                       final year = years[idx];
-                      if (year % 10 != 0) return const SizedBox.shrink();
+                      // 특정 기간만 보일 때는 매년 표기, 전체 기간은 10년 단위로 표기.
+                      if (showFullRangeOverlays && year % 10 != 0) {
+                        return const SizedBox.shrink();
+                      }
                       return SideTitleWidget(
                         axisSide: meta.axisSide,
                         space: 6,

@@ -337,8 +337,6 @@ class MainController extends GetxController
     if (Get.arguments != null) {
       final index = Get.arguments;
 
-      print('===== argument received: $index =====');
-
       switch (index) {
         case 0:
           _setInitialMenu(MainMenu.exposure);
