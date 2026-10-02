@@ -139,11 +139,16 @@ class ScenarioApAllPeriodsChart extends StatelessWidget {
                   sideTitles: SideTitles(
                     showTitles: true,
                     reservedSize: 52,
-                    getTitlesWidget: (value, meta) => Text(
-                      value.toStringAsFixed(_decimals),
-                      style:
-                          const TextStyle(fontSize: 10, color: Colors.black87),
-                    ),
+                    getTitlesWidget: (value, meta) {
+                      if (value == meta.max) {
+                        return const SizedBox.shrink();
+                      }
+                      return Text(
+                        value.toStringAsFixed(_decimals),
+                        style: const TextStyle(
+                            fontSize: 10, color: Colors.black87),
+                      );
+                    },
                   ),
                 ),
                 bottomTitles: AxisTitles(

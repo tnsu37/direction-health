@@ -1144,9 +1144,6 @@ file:///Users/sooyoung/Documents/GitHub/direction-health/lib/pages/scenario/widg
 file:///Users/sooyoung/Documents/GitHub/direction-health/lib/pages/scenario/widget/scenario_ap_chart.dart
 file:///Users/sooyoung/Documents/GitHub/direction-health/lib/pages/scenario/widget/scenario_ap_timeseries_chart.dart
 file:///Users/sooyoung/Documents/GitHub/direction-health/lib/pages/scenario/widget/scenario_temp_chart.dart
-file:///Users/sooyoung/Documents/GitHub/direction-health/lib/pages/splash/bindings/splash_binding.dart
-file:///Users/sooyoung/Documents/GitHub/direction-health/lib/pages/splash/controller/splash_controller.dart
-file:///Users/sooyoung/Documents/GitHub/direction-health/lib/pages/splash/view/splash_view_page.dart
 file:///Users/sooyoung/Documents/GitHub/direction-health/lib/route/route.dart
 file:///Users/sooyoung/flutter/bin/cache/flutter_web_sdk/kernel/dart2js_platform.dill
 file:///Users/sooyoung/flutter/packages/flutter/lib/animation.dart

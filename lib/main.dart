@@ -17,7 +17,7 @@ void main() async {
     minTextAdapt: true,
     builder: (context, child) => GetMaterialApp(
         builder: (context, child) {
-          if (MediaQuery.of(context).size.width < 1550) {
+          if (MediaQuery.of(context).size.width < 1750) {
             Common.bigSize.value = false;
           } else {
             Common.bigSize.value = true;
