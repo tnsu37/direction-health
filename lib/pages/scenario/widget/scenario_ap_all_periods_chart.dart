@@ -1,4 +1,5 @@
 import 'package:boilerplate/common/api.dart';
+import 'package:boilerplate/common/common.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 
@@ -84,16 +85,11 @@ class ScenarioApAllPeriodsChart extends StatelessWidget {
     ];
 
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         if (chartTitle.isNotEmpty)
           Padding(
-            padding: const EdgeInsets.only(bottom: 8),
-            child: Text(chartTitle,
-                style: const TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w600,
-                    color: Color(0xFF333333))),
+            padding: const EdgeInsets.only(bottom: 12),
+            child: Text(chartTitle, style: CommonStyle.textStyleFontBlack18600),
           ),
         SizedBox(
           height: 380,
@@ -178,6 +174,7 @@ class ScenarioApAllPeriodsChart extends StatelessWidget {
         ),
         const SizedBox(height: 10),
         Row(
+          mainAxisSize: MainAxisSize.min,
           children: [
             Container(width: 16, height: 14, color: _baselineColor),
             const SizedBox(width: 5),

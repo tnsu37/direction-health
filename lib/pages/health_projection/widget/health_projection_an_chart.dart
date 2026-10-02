@@ -1,4 +1,5 @@
 import 'package:boilerplate/common/api.dart';
+import 'package:boilerplate/common/common.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 
@@ -94,8 +95,15 @@ class HealthProjectionAnChart extends StatelessWidget {
       if (!seriesKeys.contains(k)) seriesKeys.add(k);
     }
     if (_isAP) {
-      seriesKeys.sort(
-          (a, b) => (int.tryParse(a) ?? 0).compareTo(int.tryParse(b) ?? 0));
+      // 기준(0%)은 항상 왼쪽, 선택한 농도변화율은 부호와 관계없이 항상 오른쪽에 오도록 정렬.
+      seriesKeys.sort((a, b) {
+        final av = int.tryParse(a) ?? 0;
+        final bv = int.tryParse(b) ?? 0;
+        if (av == 0 && bv == 0) return 0;
+        if (av == 0) return -1;
+        if (bv == 0) return 1;
+        return av.compareTo(bv);
+      });
     }
 
     final Map<String, Map<String, double>> pivot = {};
@@ -104,9 +112,8 @@ class HealthProjectionAnChart extends StatelessWidget {
     }
 
     final allVals = data.summaryData.map((p) => p.anSum).toList();
-    final maxVal = allVals.isEmpty
-        ? 1.0
-        : allVals.reduce((a, b) => a > b ? a : b);
+    final maxVal =
+        allVals.isEmpty ? 1.0 : allVals.reduce((a, b) => a > b ? a : b);
     final maxY = maxVal <= 0 ? 1.0 : maxVal * 1.22;
 
     final barWidth = seriesKeys.length > 3 ? 12.0 : 18.0;
@@ -127,16 +134,11 @@ class HealthProjectionAnChart extends StatelessWidget {
     }).toList();
 
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         if (chartTitle.isNotEmpty)
           Padding(
-            padding: const EdgeInsets.only(bottom: 8),
-            child: Text(chartTitle,
-                style: const TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w600,
-                    color: Color(0xFF333333))),
+            padding: const EdgeInsets.only(bottom: 12),
+            child: Text(chartTitle, style: CommonStyle.textStyleFontBlack18600),
           ),
         SizedBox(
           height: 380,
@@ -148,8 +150,8 @@ class HealthProjectionAnChart extends StatelessWidget {
               gridData: FlGridData(
                 show: true,
                 drawVerticalLine: false,
-                getDrawingHorizontalLine: (v) =>
-                    FlLine(color: Colors.grey.withOpacity(0.15), strokeWidth: 1),
+                getDrawingHorizontalLine: (v) => FlLine(
+                    color: Colors.grey.withOpacity(0.15), strokeWidth: 1),
               ),
               borderData: FlBorderData(
                 show: true,
@@ -172,18 +174,35 @@ class HealthProjectionAnChart extends StatelessWidget {
                 ),
               ),
               titlesData: FlTitlesData(
-                topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                topTitles:
+                    const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                rightTitles:
+                    const AxisTitles(sideTitles: SideTitles(showTitles: false)),
                 leftTitles: AxisTitles(
                   axisNameWidget: Text(_unitLabel,
-                      style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
-                  sideTitles: const SideTitles(showTitles: true, reservedSize: 52),
+                      style: const TextStyle(
+                          fontSize: 12, fontWeight: FontWeight.w600)),
+                  sideTitles: SideTitles(
+                    showTitles: true,
+                    reservedSize: 52,
+                    getTitlesWidget: (value, meta) {
+                      if (value == meta.min || value == meta.max) {
+                        return const SizedBox.shrink();
+                      }
+                      return Text(
+                        meta.formattedValue,
+                        style: const TextStyle(
+                            fontSize: 10, color: Colors.black87),
+                      );
+                    },
+                  ),
                 ),
                 bottomTitles: AxisTitles(
                   axisNameWidget: const Padding(
                     padding: EdgeInsets.only(top: 8),
                     child: Text('기간',
-                        style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
+                        style: TextStyle(
+                            fontSize: 12, fontWeight: FontWeight.w600)),
                   ),
                   axisNameSize: 32,
                   sideTitles: SideTitles(
@@ -191,14 +210,16 @@ class HealthProjectionAnChart extends StatelessWidget {
                     reservedSize: 36,
                     getTitlesWidget: (value, meta) {
                       final i = value.toInt();
-                      if (i < 0 || i >= periods.length) return const SizedBox.shrink();
+                      if (i < 0 || i >= periods.length)
+                        return const SizedBox.shrink();
                       return SideTitleWidget(
                         axisSide: meta.axisSide,
                         space: 6,
                         child: Text(
                           _periodLabel(periods[i]),
                           textAlign: TextAlign.center,
-                          style: const TextStyle(fontSize: 10, color: Colors.black87),
+                          style: const TextStyle(
+                              fontSize: 10, color: Colors.black87),
                         ),
                       );
                     },
@@ -210,6 +231,7 @@ class HealthProjectionAnChart extends StatelessWidget {
         ),
         const SizedBox(height: 10),
         Wrap(
+          alignment: WrapAlignment.center,
           spacing: 16,
           runSpacing: 4,
           children: seriesKeys.map((key) {

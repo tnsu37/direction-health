@@ -169,7 +169,8 @@ class ResultTableFactory {
       }),
       <RtCell>[
         RtCell(unitLabel, bold: true),
-        ...sortedYears.map((y) => RtCell(_fmtByMode(yearly[y], mode))),
+        ...sortedYears
+            .map((y) => RtCell(_fmtByMode(yearly[y], mode), bold: true)),
       ],
     ];
 

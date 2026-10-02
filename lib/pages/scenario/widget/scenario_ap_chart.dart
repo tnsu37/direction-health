@@ -1,4 +1,5 @@
 import 'package:boilerplate/common/api.dart';
+import 'package:boilerplate/common/common.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 
@@ -79,16 +80,11 @@ class ScenarioApChart extends StatelessWidget {
     ];
 
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         if (chartTitle.isNotEmpty)
           Padding(
-            padding: const EdgeInsets.only(bottom: 8),
-            child: Text(chartTitle,
-                style: const TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w600,
-                    color: Color(0xFF333333))),
+            padding: const EdgeInsets.only(bottom: 12),
+            child: Text(chartTitle, style: CommonStyle.textStyleFontBlack18600),
           ),
         SizedBox(
           height: 380,
@@ -123,10 +119,10 @@ class ScenarioApChart extends StatelessWidget {
                 ),
               ),
               titlesData: FlTitlesData(
-                topTitles: const AxisTitles(
-                    sideTitles: SideTitles(showTitles: false)),
-                rightTitles: const AxisTitles(
-                    sideTitles: SideTitles(showTitles: false)),
+                topTitles:
+                    const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                rightTitles:
+                    const AxisTitles(sideTitles: SideTitles(showTitles: false)),
                 leftTitles: AxisTitles(
                   axisNameWidget: Text(unitLabel,
                       style: const TextStyle(
@@ -136,8 +132,8 @@ class ScenarioApChart extends StatelessWidget {
                     reservedSize: 52,
                     getTitlesWidget: (value, meta) => Text(
                       value.toStringAsFixed(_decimals),
-                      style: const TextStyle(
-                          fontSize: 10, color: Colors.black87),
+                      style:
+                          const TextStyle(fontSize: 10, color: Colors.black87),
                     ),
                   ),
                 ),
@@ -174,6 +170,7 @@ class ScenarioApChart extends StatelessWidget {
         const SizedBox(height: 10),
         // Legend
         Row(
+          mainAxisSize: MainAxisSize.min,
           children: [
             Container(
                 width: 16,

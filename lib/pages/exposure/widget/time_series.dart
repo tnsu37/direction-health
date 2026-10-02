@@ -150,10 +150,15 @@ class TimeSeries extends StatelessWidget {
               sideTitles: SideTitles(
                 showTitles: true,
                 reservedSize: 35,
-                getTitlesWidget: (value, meta) => Text(
-                  value.toStringAsFixed(_decimals),
-                  style: const TextStyle(fontSize: 10),
-                ),
+                getTitlesWidget: (value, meta) {
+                  if (value == meta.min || value == meta.max) {
+                    return const SizedBox.shrink();
+                  }
+                  return Text(
+                    value.toStringAsFixed(_decimals),
+                    style: const TextStyle(fontSize: 10),
+                  );
+                },
               ),
             ),
             bottomTitles: AxisTitles(
