@@ -36,12 +36,12 @@ class OnboardingViewPage extends GetView<OnboardingController> {
               Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  OnboardingBox(index: 0, onTap: controller.selet),
+                  OnboardingBox(index: 0, onTap: controller.select),
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 40),
-                    child: OnboardingBox(index: 1, onTap: controller.selet),
+                    child: OnboardingBox(index: 1, onTap: controller.select),
                   ),
-                  OnboardingBox(index: 2, onTap: controller.selet),
+                  OnboardingBox(index: 2, onTap: controller.select),
                 ],
               ),
             ],

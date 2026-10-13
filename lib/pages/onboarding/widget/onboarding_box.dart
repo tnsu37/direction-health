@@ -32,6 +32,7 @@ class OnboardingBox extends StatelessWidget {
               return GestureDetector(
                 onTap: () {
                   onTap(index);
+                  print(index);
                 },
                 child: AnimatedContainer(
                   duration: const Duration(milliseconds: 200),

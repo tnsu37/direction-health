@@ -1,5 +1,4 @@
-import 'package:boilerplate/pages/main/bindings/main_binding.dart';
-import 'package:boilerplate/pages/main/view/main_view_page.dart';
+import 'package:boilerplate/pages/main/controller/main_controller.dart';
 import 'package:get/get.dart';
 
 class OnboardingController extends GetxController {
@@ -11,7 +10,19 @@ class OnboardingController extends GetxController {
 
   List<String> category = ['노출', '건강 영향', '미래 예측'];
 
-  void selet(index) {
-    Get.toNamed('/main', arguments: index);
+  void select(int index) {
+    if (Get.isRegistered<MainController>()) {
+      // MainController가 이미 존재하면 직접 메뉴 변경
+      MainController.to.selectMenuByIndex(index);
+
+      // 현재 main이 아니라면 main으로 이동
+      if (Get.currentRoute != '/main') {
+        Get.toNamed('/main');
+      }
+    } else {
+      // MainController가 아직 만들어지지 않았다면
+      // 기존처럼 argument를 전달
+      Get.toNamed('/main', arguments: index);
+    }
   }
 }

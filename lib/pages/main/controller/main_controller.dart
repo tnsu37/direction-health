@@ -200,7 +200,25 @@ class MainController extends GetxController
   //  Navigation actions
   // ──────────────────────────────────────────
 
-  void _setInitialMenu(MainMenu menu) {
+  void _setInitialMenu(int index) {
+    late MainMenu menu;
+    switch (index) {
+      case 0:
+        menu = MainMenu.exposure;
+        break;
+
+      case 1:
+        menu = MainMenu.healthImpact;
+        break;
+
+      case 2:
+        menu = MainMenu.climateScenario;
+        break;
+
+      case 3:
+        menu = MainMenu.futureHealth;
+        break;
+    }
     selectedMenu.value = menu;
 
     final items = Common.navTree[menu]!;
@@ -227,6 +245,26 @@ class MainController extends GetxController
       selectedSubId.value = first.id;
     }
     _resetFilters();
+  }
+
+  void selectMenuByIndex(int index) {
+    switch (index) {
+      case 0:
+        selectMenu(MainMenu.exposure);
+        break;
+
+      case 1:
+        selectMenu(MainMenu.healthImpact);
+        break;
+
+      case 2:
+        selectMenu(MainMenu.climateScenario);
+        break;
+
+      case 3:
+        selectMenu(MainMenu.futureHealth);
+        break;
+    }
   }
 
   void selectTopMenuAndSub(MainMenu menu, String subId) {
@@ -335,23 +373,8 @@ class MainController extends GetxController
 
     animationController.forward();
     if (Get.arguments != null) {
-      final index = Get.arguments;
-
-      switch (index) {
-        case 0:
-          _setInitialMenu(MainMenu.exposure);
-          break;
-
-        case 1:
-          _setInitialMenu(MainMenu.healthImpact);
-          break;
-
-        case 2:
-          _setInitialMenu(MainMenu.climateScenario);
-          break;
-      }
-    } else {
-      print('===== Get.arguments IS NULL =====');
+      final int index = Get.arguments;
+      _setInitialMenu(index);
     }
   }
 
